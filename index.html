@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tilavovlar Shajarasi — Onlayn Oila Shajarasi</title>
+  <title>Tilavovlar Shajarasi — Interaktiv Oila Shajarasi</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <!-- Firebase App & Realtime Database SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -68,7 +68,7 @@
           <span id="memberCountBadge" class="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">0 kishi</span>
           <span id="saveStatusBadge" class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            Onlayn baza ulangan
+            Onlayn Baza Ulangan
           </span>
         </div>
         <div class="hidden sm:flex items-center gap-1 mt-0.5">
@@ -83,9 +83,9 @@
       </div>
     </div>
 
-    <!-- Controls -->
+    <!-- Search & Controls -->
     <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-      <button id="quickSaveBtn" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1 shadow-sm transition">
+      <button id="quickSaveBtn" class="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1 shadow-sm transition">
         <span>☁️</span>
         <span>Saqlash</span>
       </button>
@@ -101,6 +101,11 @@
           <circle cx="11" cy="11" r="8"></circle>
           <path stroke-linecap="round" d="m21 21-4.3-4.3"></path>
         </svg>
+        <button id="clearSearchBtn" title="Tozalash" class="hidden absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
       </div>
 
       <div class="inline-flex rounded-lg bg-slate-100 p-0.5 border border-slate-200">
@@ -108,14 +113,14 @@
         <button id="tabListBtn" class="px-2.5 py-1 text-xs font-medium rounded-md text-slate-600 hover:text-slate-900 transition">Ro'yxat</button>
       </div>
 
-      <button id="layoutDirBtn" title="Daraxt yo'nalishini o'zgartirish" class="px-2 py-1.5 text-xs font-medium rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 flex items-center gap-1 transition">
+      <button id="layoutDirBtn" title="Yo'nalishni o'zgartirish" class="px-2 py-1.5 text-xs font-medium rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 flex items-center gap-1 transition">
         <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
         </svg>
         <span id="layoutDirLabel" class="hidden lg:inline">Vertikal</span>
       </button>
 
-      <select id="themeSelect" aria-label="Ko'rinish mavzusi" class="px-2 py-1.5 text-xs font-medium rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 hidden md:block">
+      <select id="themeSelect" class="px-2 py-1.5 text-xs font-medium rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 hidden md:block">
         <option value="modern">Zamonaviy mavzu</option>
         <option value="emerald">Tabiat (Yashil)</option>
         <option value="classic">Klassik (Oltin)</option>
@@ -132,7 +137,7 @@
         <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
         </svg>
-        <span class="hidden sm:inline">JSON Zaxira</span>
+        <span class="hidden sm:inline">JSON</span>
       </button>
     </div>
   </header>
@@ -148,9 +153,6 @@
         <button id="quickAddSpouseTopBtn" class="px-3 py-1.5 rounded-lg bg-white/95 backdrop-blur border border-pink-200 shadow-sm hover:bg-pink-50 text-xs font-semibold text-pink-700 flex items-center gap-1.5 transition">
           <span>💍</span>
           Turmush o'rtoq qo'shish
-        </button>
-        <button id="resetSampleBtn" class="px-2.5 py-1.5 rounded-lg bg-white/95 backdrop-blur border border-slate-200 shadow-sm hover:bg-slate-100 text-xs font-medium text-slate-600 transition">
-          Namuna shajara
         </button>
       </div>
 
@@ -173,7 +175,7 @@
         <span id="zoomLevelText" class="text-xs font-semibold text-slate-600 px-2 min-w-[48px] text-center">100%</span>
         <button id="zoomInBtn" title="Kattalashtirish" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-base transition">+</button>
         <div class="w-px h-5 bg-slate-200 mx-0.5"></div>
-        <button id="zoomFitBtn" title="Markazga qaytarish" class="px-2.5 h-8 rounded-lg hover:bg-slate-100 flex items-center gap-1 text-xs font-medium text-slate-700 transition">Markazga</button>
+        <button id="zoomFitBtn" title="Markazga" class="px-2.5 h-8 rounded-lg hover:bg-slate-100 flex items-center gap-1 text-xs font-medium text-slate-700 transition">Markazga</button>
       </div>
 
       <!-- SVG Viewport -->
@@ -205,9 +207,9 @@
       <div class="px-4 py-2.5 border-b border-slate-200 flex items-center justify-between bg-slate-50/70">
         <div class="flex items-center gap-2">
           <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-          <h2 class="font-bold text-sm text-slate-800" id="sidebarTitle">Shaxsni tahrirlash</h2>
+          <h2 class="font-bold text-sm text-slate-800">Shaxsni tahrirlash</h2>
         </div>
-        <button id="closeSidebarMobileBtn" class="sm:hidden p-1 rounded-lg text-slate-400 hover:text-slate-700">✕</button>
+        <button id="closeSidebarMobileBtn" class="sm:hidden p-1 rounded-lg text-slate-400">✕</button>
       </div>
       <div id="sidebarContent" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar"></div>
     </aside>
@@ -218,7 +220,7 @@
     <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden max-h-[90vh] flex flex-col">
       <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
         <h3 id="addModalTitle" class="font-bold text-slate-900 text-base">Yangi a'zo qo'shish</h3>
-        <button id="closeAddModalBtn" class="text-slate-400 hover:text-slate-600">✕</button>
+        <button id="closeAddModalBtn" class="text-slate-400">✕</button>
       </div>
       <form id="addRelativeForm" class="p-5 space-y-3.5 overflow-y-auto custom-scrollbar">
         <input type="hidden" id="relTargetId" value="" />
@@ -226,7 +228,7 @@
         <div id="relContextBanner" class="px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-medium"></div>
         <div>
           <label id="newFirstNameLabel" class="block text-xs font-semibold text-slate-700 mb-1" for="newFirstName">Ism va familiya *</label>
-          <input id="newFirstName" type="text" required placeholder="Masalan: Anvar Tilavov" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          <input id="newFirstName" type="text" required placeholder="Masalan: Rustam Tilavov" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" />
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -273,23 +275,10 @@
     </div>
   </div>
 
-  <!-- Confirm Modal -->
-  <div id="confirmModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-sm w-full shadow-2xl border border-slate-200 p-5 space-y-4">
-      <h3 id="confirmModalTitle" class="font-bold text-slate-900 text-base">Tasdiqlash</h3>
-      <p id="confirmModalDesc" class="text-xs text-slate-600"></p>
-      <div class="flex items-center justify-end gap-2 pt-2">
-        <button id="cancelConfirmBtn" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600">Bekor qilish</button>
-        <button id="acceptConfirmBtn" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 text-white">Tasdiqlash</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Toast -->
   <div id="toastContainer" class="fixed bottom-5 right-5 z-50 pointer-events-none flex flex-col gap-2"></div>
 
   <script>
-    // Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyBfaw8mkfO9HuVVnjT5oFl49l3Gad93cdM",
       authDomain: "tilavovlarshajarasi.firebaseapp.com",
@@ -305,7 +294,7 @@
     const db = firebase.database();
 
     (function () {
-      let state = getSampleData();
+      let state = getDefaultTreeData();
       let selectedId = state.members.length > 0 ? state.members[0].id : null;
       let searchQuery = '';
       let activeTab = 'tree';
@@ -316,18 +305,15 @@
       let isPanning = false;
       let startPanX = 0;
       let startPanY = 0;
-      let pendingConfirmAction = null;
       let isFirebaseSyncing = false;
 
-      // Realtime listener from Firebase
+      // Realtime Listener
       db.ref('shajaraData').on('value', (snapshot) => {
         if (isFirebaseSyncing) return;
         const val = snapshot.val();
         if (val && Array.isArray(val.members)) {
           state = normalizeCouplesData(val);
-          if (!selectedId && state.members.length > 0) {
-            selectedId = state.members[0].id;
-          }
+          if (!selectedId && state.members.length > 0) selectedId = state.members[0].id;
           renderAll();
         }
       });
@@ -338,21 +324,21 @@
         return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
       }
 
-      function getSampleData() {
+      function getDefaultTreeData() {
         return {
           title: 'Tilavovlar Shajarasi',
-          subtitle: 'Sulola tarixi va avlodlar shajarasi (Umumiy baza)',
+          subtitle: 'Sulola tarixi va avlodlar shajarasi',
           updatedAt: getNowFormatted(),
           layoutDirection: 'vertical',
           theme: 'modern',
           members: [
             {
               id: 'm1',
-              name: 'Tilavov (Boshboboo)',
+              name: 'Tilavov (Bobo)',
               role: 'Sulola boshlig\'i',
               gender: 'male',
-              birthYear: '1940',
-              deathYear: '',
+              birthYear: '1938',
+              deathYear: '2016',
               birthPlace: 'Toshkent',
               occupation: 'Ustoz',
               bio: 'Sulola asoschisi.',
@@ -370,8 +356,8 @@
               name: 'Xonzoda Tilavova',
               role: 'Buvi',
               gender: 'female',
-              birthYear: '1945',
-              deathYear: '',
+              birthYear: '1942',
+              deathYear: '2020',
               birthPlace: 'Toshkent',
               occupation: 'Uy bekasi',
               bio: 'Mehribon ona.',
@@ -383,17 +369,73 @@
               spouseId: 'm1',
               spouseName: 'Tilavov',
               generation: 1
+            },
+            {
+              id: 'm2',
+              name: 'Rustam Tilavov',
+              role: 'Otasi (O\'g\'il)',
+              gender: 'male',
+              birthYear: '1965',
+              deathYear: '',
+              birthPlace: 'Toshkent',
+              occupation: 'Muhandis',
+              bio: 'Oilaning tayanchi.',
+              photo: '',
+              cardColor: 'auto',
+              fatherId: 'm1',
+              motherId: 'm1_sp',
+              parentId: 'm1',
+              spouseId: 'm2_sp',
+              spouseName: 'Dilbar Tilavova',
+              generation: 2
+            },
+            {
+              id: 'm2_sp',
+              name: 'Dilbar Tilavova',
+              role: 'Onasi',
+              gender: 'female',
+              birthYear: '1968',
+              deathYear: '',
+              birthPlace: 'Toshkent',
+              occupation: 'O\'qituvchi',
+              bio: 'Fidoyi ustoz.',
+              photo: '',
+              cardColor: 'auto',
+              fatherId: null,
+              motherId: null,
+              parentId: null,
+              spouseId: 'm2',
+              spouseName: 'Rustam Tilavov',
+              generation: 2
+            },
+            {
+              id: 'm3',
+              name: 'Davron Tilavov',
+              role: 'O\'g\'li (Men)',
+              gender: 'male',
+              birthYear: '1998',
+              deathYear: '',
+              birthPlace: 'Toshkent',
+              occupation: 'Mutaxassis',
+              bio: 'Shajara tuzuvchi.',
+              photo: '',
+              cardColor: 'auto',
+              fatherId: 'm2',
+              motherId: 'm2_sp',
+              parentId: 'm2',
+              spouseId: null,
+              spouseName: '',
+              generation: 3
             }
           ]
         };
       }
 
       function normalizeCouplesData(data) {
-        if (!data || !Array.isArray(data.members)) return getSampleData();
+        if (!data || !Array.isArray(data.members)) return getDefaultTreeData();
         if (!data.subtitle) data.subtitle = 'Sulola tarixi va avlodlar shajarasi';
         const map = new Map();
         data.members.forEach(m => map.set(m.id, m));
-
         data.members.forEach(m => {
           if (m.spouseId && map.has(m.spouseId) && m.spouseId !== m.id) {
             const sp = map.get(m.spouseId);
@@ -414,10 +456,10 @@
         isFirebaseSyncing = true;
         db.ref('shajaraData').set(state).then(() => {
           isFirebaseSyncing = false;
-          if (showToastMsg) showToast('Barcha o\'zgarishlar internet bazasiga saqlandi! ☁️');
+          if (showToastMsg) showToast('Barcha o\'zgarishlar onlayn bazaga saqlandi! ☁️');
         }).catch(() => {
           isFirebaseSyncing = false;
-          showToast('Saqlashda xatolik yuz berdi', 'error');
+          showToast('Saqlashda xatolik', 'error');
         });
       }
 
@@ -464,7 +506,6 @@
 
         const partnerPaired = new Set();
         const primaryToPartner = new Map();
-        const unitPrimary = new Map();
 
         state.members.forEach(m => {
           if (partnerPaired.has(m.id) || primaryToPartner.has(m.id)) return;
@@ -473,10 +514,6 @@
             if (partnerPaired.has(sp.id) || primaryToPartner.has(sp.id)) return;
             primaryToPartner.set(m.id, sp);
             partnerPaired.add(sp.id);
-            unitPrimary.set(m.id, m.id);
-            unitPrimary.set(sp.id, m.id);
-          } else {
-            unitPrimary.set(m.id, m.id);
           }
         });
 
@@ -583,12 +620,13 @@
         linksLayer.innerHTML = '';
         nodesLayer.innerHTML = '';
 
-        document.getElementById('familyTitleInput').value = state.title || 'Tilavovlar Shajarasi';
+        const titleInput = document.getElementById('familyTitleInput');
+        if (document.activeElement !== titleInput) titleInput.value = state.title || 'Tilavovlar Shajarasi';
         document.getElementById('memberCountBadge').textContent = `${state.members.length} kishi`;
         updateQuickBar();
 
         if (state.members.length === 0) return;
-        const { positions, couplesList, isHorizontal } = computeTreeLayout();
+        const { positions, couplesList } = computeTreeLayout();
         const q = searchQuery.trim().toLowerCase();
 
         couplesList.forEach(unit => {
@@ -606,13 +644,30 @@
             line.setAttribute('stroke-width', '3');
             line.setAttribute('stroke-dasharray', '4 2');
             linksLayer.appendChild(line);
+
+            const ringGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            ringGroup.setAttribute('transform', `translate(${unit.unionX}, ${unit.unionY})`);
+            const ringCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            ringCircle.setAttribute('r', '12');
+            ringCircle.setAttribute('fill', '#fff1f2');
+            ringCircle.setAttribute('stroke', '#f43f5e');
+            ringCircle.setAttribute('stroke-width', '2');
+            ringGroup.appendChild(ringCircle);
+            const ringTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            ringTxt.setAttribute('x', '0');
+            ringTxt.setAttribute('y', '4');
+            ringTxt.setAttribute('text-anchor', 'middle');
+            ringTxt.setAttribute('font-size', '10');
+            ringTxt.textContent = '💍';
+            ringGroup.appendChild(ringTxt);
+            linksLayer.appendChild(ringGroup);
           }
 
           if (unit.kids) {
             unit.kids.forEach(childId => {
               const cPos = positions.get(childId);
               if (!cPos) return;
-              const startX = unit.unionX, startY = spPos ? unit.unionY + 13 : pPos.y + pPos.h;
+              const startX = unit.unionX, startY = spPos ? unit.unionY + 12 : pPos.y + pPos.h;
               const dropY = pPos.y + pPos.h + 28, endX = cPos.x + cPos.w / 2, endY = cPos.y;
               const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
               path.setAttribute('d', `M ${startX} ${startY} L ${startX} ${dropY} C ${startX} ${(dropY+endY)/2}, ${endX} ${(dropY+endY)/2}, ${endX} ${endY}`);
@@ -701,10 +756,6 @@
         updateTransform();
       }
 
-      function centerOnMember(memberId) {
-        selectMember(memberId);
-      }
-
       function selectMember(id) {
         selectedId = id;
         renderTree();
@@ -721,7 +772,13 @@
             <h3 class="font-bold text-slate-900 text-sm">${escapeHtml(member.name)}</h3>
             <p class="text-xs text-slate-500">${escapeHtml(member.role || '')}</p>
           </div>
-          <form id="editMemberForm" class="space-y-3 pt-2">
+          <div class="space-y-2">
+            <button type="button" id="sideAddFather" class="w-full py-2 px-3 bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-900 text-xs font-semibold rounded-xl text-left">+ Otasini qo'shish</button>
+            <button type="button" id="sideAddMother" class="w-full py-2 px-3 bg-pink-50 hover:bg-pink-100 border border-pink-200 text-pink-900 text-xs font-semibold rounded-xl text-left">+ Onasini qo'shish</button>
+            <button type="button" id="sideAddSpouse" class="w-full py-2 px-3 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-900 text-xs font-semibold rounded-xl text-left">+ Turmush o'rtog'i qo'shish</button>
+            <button type="button" id="sideAddChild" class="w-full py-2 px-3 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-semibold rounded-xl text-left">+ Farzand qo'shish</button>
+          </div>
+          <form id="editMemberForm" class="space-y-3 pt-2 border-t">
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Ism va familiya</label>
               <input id="editName" type="text" value="${escapeHtml(member.name)}" class="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg" />
@@ -737,10 +794,15 @@
               <label class="block text-xs font-semibold text-slate-700 mb-1">Tug'ilgan yili</label>
               <input id="editBirthYear" type="text" value="${escapeHtml(member.birthYear)}" class="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg" />
             </div>
-            <button type="submit" class="w-full py-2 px-4 rounded-xl bg-emerald-600 text-white font-semibold text-xs shadow-sm">Saqlash</button>
+            <button type="submit" class="w-full py-2 px-4 rounded-xl bg-emerald-600 text-white font-semibold text-xs shadow-sm">O'zgarishlarni saqlash</button>
             <button type="button" id="deleteMemberBtn" class="w-full py-2 px-4 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 font-semibold text-xs">O'chirish</button>
           </form>
         `;
+
+        document.getElementById('sideAddFather').addEventListener('click', () => openAddRelativeModal(member.id, 'father'));
+        document.getElementById('sideAddMother').addEventListener('click', () => openAddRelativeModal(member.id, 'mother'));
+        document.getElementById('sideAddSpouse').addEventListener('click', () => openAddRelativeModal(member.id, 'spouse'));
+        document.getElementById('sideAddChild').addEventListener('click', () => openAddRelativeModal(member.id, 'child'));
 
         document.getElementById('editMemberForm').addEventListener('submit', (e) => {
           e.preventDefault();
@@ -761,30 +823,16 @@
         });
       }
 
-      function renderListView() {
-        const wrapper = document.getElementById('generationListWrapper');
-        wrapper.innerHTML = state.members.map(m => `
-          <div class="p-3 bg-white rounded-xl border flex justify-between items-center">
-            <div><strong>${escapeHtml(m.name)}</strong> (${escapeHtml(m.role || '')})</div>
-            <button onclick="selectMember('${m.id}')" class="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded">Tanlash</button>
-          </div>
-        `).join('');
-      }
-
-      function renderAll() {
-        renderTree();
-        renderSidebar();
-        renderListView();
-      }
-
       function openAddRelativeModal(targetId, relType) {
         const newId = generateId();
+        const target = state.members.find(m => m.id === targetId);
+
         const newMember = {
           id: newId,
-          name: 'Yangi A\'zo',
-          gender: 'male',
-          role: relType === 'spouse' ? 'Turmush o\'rtog\'i' : 'Farzand',
-          birthYear: '2000',
+          name: relType === 'spouse' ? 'Turmush o\'rtog\'i' : (relType === 'father' ? 'Otasi' : (relType === 'mother' ? 'Onasi' : 'Farzand')),
+          gender: relType === 'mother' || (relType === 'spouse' && target?.gender === 'male') ? 'female' : 'male',
+          role: relType === 'spouse' ? 'Turmush o\'rtog\'i' : (relType === 'father' ? 'Otasi' : (relType === 'mother' ? 'Onasi' : 'Farzand')),
+          birthYear: '1970',
           deathYear: '',
           birthPlace: 'Toshkent',
           occupation: '',
@@ -796,36 +844,40 @@
           parentId: null,
           spouseId: null,
           spouseName: '',
-          generation: 2
+          generation: relType === 'father' || relType === 'mother' ? Math.max(1, (target?.generation || 2) - 1) : (target?.generation || 1) + 1
         };
 
-        const target = state.members.find(m => m.id === targetId);
-        if (target && relType === 'spouse') {
-          target.spouseId = newId;
-          target.spouseName = newMember.name;
-          newMember.spouseId = target.id;
-          newMember.spouseName = target.name;
-        } else if (target && relType === 'child') {
-          newMember.fatherId = target.id;
+        if (target) {
+          if (relType === 'father') {
+            target.fatherId = newId;
+          } else if (relType === 'mother') {
+            target.motherId = newId;
+          } else if (relType === 'spouse') {
+            target.spouseId = newId;
+            target.spouseName = newMember.name;
+            newMember.spouseId = target.id;
+            newMember.spouseName = target.name;
+          } else if (relType === 'child') {
+            if (target.gender === 'female') newMember.motherId = target.id;
+            else newMember.fatherId = target.id;
+          }
         }
 
         state.members.push(newMember);
         saveState();
         renderAll();
         selectMember(newId);
-        showToast('Yangi shaxs qo\'shildi!');
+        showToast('Yangi a\'zo qo\'shildi!');
       }
 
-      // Event Listeners
-      document.getElementById('quickSaveBtn').addEventListener('click', () => saveState(true));
+      function renderAll() {
+        renderTree();
+        renderSidebar();
+      }
 
-      document.getElementById('addRootPersonBtn').addEventListener('click', () => {
-        openAddRelativeModal(selectedId, 'child');
-      });
-      document.getElementById('quickAddSpouseTopBtn').addEventListener('click', () => {
-        if (!selectedId) return;
-        openAddRelativeModal(selectedId, 'spouse');
-      });
+      document.getElementById('quickSaveBtn').addEventListener('click', () => saveState(true));
+      document.getElementById('addRootPersonBtn').addEventListener('click', () => openAddRelativeModal(selectedId, 'child'));
+      document.getElementById('quickAddSpouseTopBtn').addEventListener('click', () => { if (selectedId) openAddRelativeModal(selectedId, 'spouse'); });
 
       document.getElementById('quickBarFatherBtn').addEventListener('click', () => { if (selectedId) openAddRelativeModal(selectedId, 'father'); });
       document.getElementById('quickBarMotherBtn').addEventListener('click', () => { if (selectedId) openAddRelativeModal(selectedId, 'mother'); });
@@ -848,27 +900,6 @@
       document.getElementById('zoomInBtn').addEventListener('click', () => { zoom *= 1.15; updateTransform(); });
       document.getElementById('zoomOutBtn').addEventListener('click', () => { zoom *= 0.85; updateTransform(); });
       document.getElementById('zoomFitBtn').addEventListener('click', fitTreeToViewport);
-
-      document.getElementById('tabTreeBtn').addEventListener('click', () => {
-        activeTab = 'tree';
-        document.getElementById('treeViewContainer').classList.remove('hidden');
-        document.getElementById('listViewContainer').classList.add('hidden');
-      });
-      document.getElementById('tabListBtn').addEventListener('click', () => {
-        activeTab = 'list';
-        document.getElementById('treeViewContainer').classList.add('hidden');
-        document.getElementById('listViewContainer').classList.remove('hidden');
-        renderListView();
-      });
-
-      document.getElementById('layoutDirBtn').addEventListener('click', () => {
-        state.layoutDirection = state.layoutDirection === 'horizontal' ? 'vertical' : 'horizontal';
-        renderTree();
-      });
-
-      document.getElementById('exportPngBtn').addEventListener('click', () => {
-        showToast('PNG eksport tayyorlanmoqda...');
-      });
 
       window.addEventListener('DOMContentLoaded', () => {
         fitTreeToViewport();

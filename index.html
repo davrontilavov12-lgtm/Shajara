@@ -534,7 +534,27 @@
 
   <!-- Toast Notification -->
   <div id="toastContainer" class="fixed bottom-5 right-5 z-50 pointer-events-none flex flex-col gap-2"></div>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, set, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
+  const app = initializeApp({
+    apiKey: "AIzaSyBfaw8mkfO9HuVVnjT5oFl49l3Gad93cdM",
+    authDomain: "tilavovlarshajarasi.firebaseapp.com",
+    databaseURL: "https://tilavovlarshajarasi-default-rtdb.firebaseio.com",
+    projectId: "tilavovlarshajarasi",
+    storageBucket: "tilavovlarshajarasi.firebasestorage.app",
+    messagingSenderId: "131863302267",
+    appId: "1:131863302267:web:fed81f2d088f4f8ece12de"
+  });
+  const db = getDatabase(app);
+
+  window.CLOUD = {
+    save: (id, data) => set(ref(db, "shajara/projects/" + id), data),
+    remove: (id) => remove(ref(db, "shajara/projects/" + id)),
+    listen: (cb, errCb) => onValue(ref(db, "shajara/projects"), (snap) => cb(snap.val()), errCb)
+  };
+</script>
   <script>
     (function () {
       const STORAGE_KEY = 'uz_shajara_daraxti_v3';
@@ -3421,7 +3441,91 @@
           }
         });
       }
+// ---------- UMUMIY BAZA (Firebase) ----------
+const lastPushed = {};
+let cloudReady = false, firstSnap = true, pushTimer = null;
 
+function ser(v) {
+  if (Array.isArray(v)) return '[' + v.map(x => ser(x) || 'null').join(',') + ']';
+  if (v && typeof v === 'object') {
+    return '{' + Object.keys(v).sort()
+      .filter(k => v[k] !== null && v[k] !== undefined)
+      .map(k => JSON.stringify(k) + ':' + ser(v[k])).join(',') + '}';
+  }
+  return (v === null || v === undefined) ? '' : JSON.stringify(v);
+}
+
+function cloudPush() {
+  if (!window.CLOUD || !cloudReady) return;
+  const currentIds = new Set(projectsStore.projects.map(p => p.projectId));
+  Object.keys(lastPushed).forEach(id => {
+    if (!currentIds.has(id)) {
+      delete lastPushed[id];
+      CLOUD.remove(id).catch(() => {});
+    }
+  });
+  projectsStore.projects.forEach(p => {
+    const s = ser(p);
+    if (lastPushed[p.projectId] !== s) {
+      lastPushed[p.projectId] = s;
+      CLOUD.save(p.projectId, JSON.parse(JSON.stringify(p)))
+        .catch(() => showToast('Umumiy bazaga saqlashda xatolik', 'error'));
+    }
+  });
+}
+
+function onCloudData(val) {
+  let remote = [];
+  if (val) {
+    remote = Object.values(val).map(p => {
+      p.members = Array.isArray(p.members) ? p.members.filter(Boolean) : Object.values(p.members || {});
+      return normalizeCouplesData(p);
+    });
+  }
+  if (firstSnap) {
+    const ids = new Set(remote.map(p => p.projectId));
+    projectsStore.projects.forEach(p => {
+      if (!ids.has(p.projectId) && p.projectId !== 'proj_sample_default') {
+        remote.push(p);
+      }
+    });
+    firstSnap = false;
+    if (remote.length === 0) {
+      cloudReady = true;
+      cloudPush();
+      return;
+    }
+  }
+  if (remote.length === 0) { cloudReady = true; return; }
+
+  remote.sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
+  cloudReady = true;
+  if (ser(remote) === ser(projectsStore.projects)) return;
+
+  Object.keys(lastPushed).forEach(id => delete lastPushed[id]);
+  remote.forEach(p => { lastPushed[p.projectId] = ser(p); });
+  projectsStore.projects = remote;
+  const same = remote.find(p => p.projectId === state.projectId);
+  state = same || remote[0];
+  projectsStore.activeProjectId = state.projectId;
+  if (!state.members.some(m => m.id === selectedId)) {
+    selectedId = state.members.length ? state.members[0].id : null;
+  }
+  try { localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projectsStore)); } catch (e) {}
+  renderAll();
+  if (!same) fitTreeToViewport();
+  cloudPush();
+}
+
+function startCloud() {
+  if (!window.CLOUD) {
+    showToast('Firebase ulanmadi — faqat lokal rejim', 'error');
+    return;
+  }
+  CLOUD.listen(onCloudData, () => showToast('Baza bilan aloqa xatosi (Rules ni tekshiring)', 'error'));
+  setInterval(cloudPush, 1500);
+}
+setTimeout(startCloud, 600);
       // Initialize App
       window.addEventListener('DOMContentLoaded', () => {
         initEvents();

@@ -3526,6 +3526,121 @@ function startCloud() {
   setInterval(cloudPush, 1500);
 }
 setTimeout(startCloud, 600);
+      // ---------- MARKAZLASH: tanlangan shaxs uchun ajdod + avlod shajarasi ----------
+let focusId = null;
+let focusProjectId = null;
+let inFocusView = false;
+
+function getFocusIds(id) {
+  const map = new Map();
+  state.members.forEach(m => map.set(m.id, m));
+  const ids = new Set();
+  const seen = new Set([id]);
+
+  function addWithSpouse(pid) {
+    ids.add(pid);
+    const p = map.get(pid);
+    if (p && p.spouseId && map.has(p.spouseId)) ids.add(p.spouseId);
+  }
+  function addAncestors(pid) {
+    const m = map.get(pid);
+    if (!m) return;
+    [m.fatherId, m.motherId, m.parentId].forEach(a => {
+      if (a && map.has(a) && !seen.has(a)) {
+        seen.add(a);
+        addWithSpouse(a);
+        addAncestors(a);
+      }
+    });
+  }
+
+  addWithSpouse(id);
+  addAncestors(id);
+  getDescendantIds(id).forEach(d => ids.add(d));
+  // Hozir tanlangan shaxs doim ko'rinib tursin (yangi qo'shilganlar yo'qolib qolmasligi uchun)
+  if (selectedId && map.has(selectedId)) addWithSpouse(selectedId);
+  return ids;
+}
+
+function withFocusView(fn) {
+  const active = !inFocusView && focusId &&
+    state.projectId === focusProjectId &&
+    state.members.some(m => m.id === focusId);
+  if (!active) return fn();
+
+  const real = state;
+  const ids = getFocusIds(focusId);
+  const view = JSON.parse(JSON.stringify(real));
+  view.members = view.members.filter(m => ids.has(m.id));
+  state = view;
+  inFocusView = true;
+  try {
+    return fn();
+  } finally {
+    state = real;
+    inFocusView = false;
+  }
+}
+
+// Daraxtni chizish va joylashtirishni "markazlash ko'rinishi"ga o'raymiz
+const _origComputeTreeLayout = computeTreeLayout;
+computeTreeLayout = function () { return withFocusView(_origComputeTreeLayout); };
+
+const _origRenderTree = renderTree;
+renderTree = function () {
+  withFocusView(_origRenderTree);
+  updateFocusBanner();
+};
+
+const _origRenderSidebar = renderSidebar;
+renderSidebar = function () {
+  _origRenderSidebar();
+  const b = document.getElementById('btnCenterNode');
+  if (b) b.textContent = '🎯 Shu shaxs shajarasi';
+};
+
+// Yuqoridagi "Butun shajara" paneli
+const focusBanner = document.createElement('div');
+focusBanner.id = 'focusBanner';
+focusBanner.className = 'hidden absolute top-14 left-1/2 -translate-x-1/2 z-10 bg-emerald-600 text-white rounded-2xl px-4 py-2 shadow-lg flex items-center gap-3 text-xs font-semibold max-w-[92%]';
+focusBanner.innerHTML = '<span id="focusBannerText" class="truncate"></span>' +
+  '<button type="button" id="focusExitBtn" class="px-3 py-1 rounded-lg bg-white text-emerald-800 font-bold hover:bg-emerald-50 shrink-0">Butun shajara</button>';
+document.getElementById('treeViewContainer').appendChild(focusBanner);
+
+function updateFocusBanner() {
+  const person = focusId && state.projectId === focusProjectId
+    ? state.members.find(m => m.id === focusId) : null;
+  focusBanner.classList.toggle('hidden', !person);
+  if (person) {
+    document.getElementById('focusBannerText').textContent =
+      '🎯 ' + person.name + ' — ajdodlari va avlodlari';
+  }
+}
+
+document.getElementById('focusExitBtn').addEventListener('click', () => {
+  focusId = null;
+  focusProjectId = null;
+  renderAll();
+  fitTreeToViewport();
+});
+
+// "Markazlash" tugmasi bosilganda eski ishni to'xtatib, yangisini bajaramiz
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest && e.target.closest('#btnCenterNode');
+  if (!btn) return;
+  e.stopPropagation();
+  if (!selectedId) return;
+  focusId = selectedId;
+  focusProjectId = state.projectId;
+  if (activeTab === 'list') document.getElementById('tabTreeBtn').click();
+  if (window.innerWidth < 640) {
+    document.getElementById('inspectorSidebar').classList.add('translate-x-full');
+  }
+  renderAll();
+  fitTreeToViewport();
+  const p = state.members.find(m => m.id === focusId);
+  showToast('🎯 ' + (p ? p.name : '') + ' markazga qo\'yildi');
+}, true);
       // Initialize App
       window.addEventListener('DOMContentLoaded', () => {
         initEvents();

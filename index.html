@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shajara Daraxti — Interaktiv Oila Shajarasi Dasturi</title>
+  <title>Tilavovlar Shajarasi — Onlayn Oila Shajarasi</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <!-- Firebase App & Realtime Database SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -28,9 +31,7 @@
       background-color: #f0fdf4;
       background-image: radial-gradient(#bbf7d0 1.25px, transparent 1.25px);
     }
-    .node-card {
-      cursor: pointer;
-    }
+    .node-card { cursor: pointer; }
     .node-card > rect.card-bg {
       transition: stroke 0.15s ease, stroke-width 0.15s ease, fill 0.15s ease;
     }
@@ -38,20 +39,10 @@
       stroke: #059669;
       stroke-width: 2.5px;
     }
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 9999px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
-    }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 h-screen w-screen flex flex-col overflow-hidden" id="appRoot">
@@ -69,22 +60,22 @@
           <input
             id="familyTitleInput"
             type="text"
-            value="Mening Oila Shajaram"
+            value="Tilavovlar Shajarasi"
             title="Shajara nomini tahrirlash uchun bosing"
             aria-label="Shajara nomi"
             class="font-bold text-slate-900 text-sm sm:text-base bg-transparent border-b border-dashed border-slate-300 hover:border-emerald-500 focus:border-emerald-600 focus:bg-slate-50 focus:outline-none px-1 py-0.5 rounded transition max-w-[170px] sm:max-w-[230px]"
           />
           <span id="memberCountBadge" class="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">0 kishi</span>
-          <span id="saveStatusBadge" class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 hidden md:inline-flex items-center gap-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-            Avto-saqlangan
+          <span id="saveStatusBadge" class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            Onlayn baza ulangan
           </span>
         </div>
         <div class="hidden sm:flex items-center gap-1 mt-0.5">
           <input
             id="familySubtitleInput"
             type="text"
-            value="Sulola tarixi va avlodlar shajarasi (Tahrirlash uchun bosing)"
+            value="Sulola tarixi va avlodlar shajarasi (Umumiy baza)"
             aria-label="Shajara izohi"
             class="text-[11px] text-slate-500 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-emerald-500 focus:outline-none px-1 rounded w-72 md:w-96 transition"
           />
@@ -92,22 +83,13 @@
       </div>
     </div>
 
-    <!-- Search, Multi-Tree Switcher & Save Controls -->
+    <!-- Controls -->
     <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-      <!-- My Saved Trees Button (Multi-tree workspace) -->
-      <button id="openProjectsModalBtn" class="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1.5 shadow-2xs transition">
-        <span>📂</span>
-        <span>Shajaralarim</span>
-        <span id="projectsCountBadge" class="px-1.5 py-0.2 rounded-full bg-amber-200/80 text-amber-950 text-[10px] font-bold">1</span>
-      </button>
-
-      <!-- Instant Save Button -->
-      <button id="quickSaveBtn" class="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1 shadow-sm transition">
-        <span>💾</span>
+      <button id="quickSaveBtn" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1 shadow-sm transition">
+        <span>☁️</span>
         <span>Saqlash</span>
       </button>
 
-      <!-- Search input -->
       <div class="relative">
         <input
           id="searchInput"
@@ -119,24 +101,13 @@
           <circle cx="11" cy="11" r="8"></circle>
           <path stroke-linecap="round" d="m21 21-4.3-4.3"></path>
         </svg>
-        <button id="clearSearchBtn" title="Tozalash" class="hidden absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
       </div>
 
-      <!-- View Tabs -->
       <div class="inline-flex rounded-lg bg-slate-100 p-0.5 border border-slate-200">
-        <button id="tabTreeBtn" class="px-2.5 py-1 text-xs font-medium rounded-md bg-white text-slate-900 shadow-sm transition">
-          Daraxt
-        </button>
-        <button id="tabListBtn" class="px-2.5 py-1 text-xs font-medium rounded-md text-slate-600 hover:text-slate-900 transition">
-          Ro'yxat
-        </button>
+        <button id="tabTreeBtn" class="px-2.5 py-1 text-xs font-medium rounded-md bg-white text-slate-900 shadow-sm transition">Daraxt</button>
+        <button id="tabListBtn" class="px-2.5 py-1 text-xs font-medium rounded-md text-slate-600 hover:text-slate-900 transition">Ro'yxat</button>
       </div>
 
-      <!-- Direction Toggle -->
       <button id="layoutDirBtn" title="Daraxt yo'nalishini o'zgartirish" class="px-2 py-1.5 text-xs font-medium rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 flex items-center gap-1 transition">
         <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
@@ -144,14 +115,12 @@
         <span id="layoutDirLabel" class="hidden lg:inline">Vertikal</span>
       </button>
 
-      <!-- Theme selector -->
       <select id="themeSelect" aria-label="Ko'rinish mavzusi" class="px-2 py-1.5 text-xs font-medium rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 hidden md:block">
         <option value="modern">Zamonaviy mavzu</option>
         <option value="emerald">Tabiat (Yashil)</option>
         <option value="classic">Klassik (Oltin)</option>
       </select>
 
-      <!-- Export PNG & JSON Backup -->
       <button id="exportPngBtn" class="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 flex items-center gap-1 transition">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
@@ -163,23 +132,15 @@
         <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
         </svg>
-        <span class="hidden sm:inline">Saqlash / Yuklash</span>
+        <span class="hidden sm:inline">JSON Zaxira</span>
       </button>
     </div>
   </header>
 
   <!-- Main Workspace -->
   <div class="flex-1 flex overflow-hidden relative">
-
-    <!-- Left / Center: Interactive Tree Canvas View -->
     <main id="treeViewContainer" class="flex-1 relative overflow-hidden canvas-grid flex flex-col">
-
-      <!-- Floating Top-Left Generation Legend & Quick Actions -->
       <div class="absolute top-3 left-3 z-10 flex flex-wrap items-center gap-2 pointer-events-auto">
-        <button id="createNewTreeTopBtn" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white shadow-sm text-xs font-semibold flex items-center gap-1.5 transition">
-          <span>+🌳</span>
-          Yangi alohida shajara
-        </button>
         <button id="addRootPersonBtn" class="px-3 py-1.5 rounded-lg bg-white/95 backdrop-blur border border-slate-200 shadow-sm hover:bg-emerald-50 hover:border-emerald-300 text-xs font-semibold text-slate-800 flex items-center gap-1.5 transition">
           <span class="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs leading-none">+</span>
           Yangi inson qo'shish
@@ -191,63 +152,37 @@
         <button id="resetSampleBtn" class="px-2.5 py-1.5 rounded-lg bg-white/95 backdrop-blur border border-slate-200 shadow-sm hover:bg-slate-100 text-xs font-medium text-slate-600 transition">
           Namuna shajara
         </button>
-        <button id="clearAllModalBtn" class="px-2.5 py-1.5 rounded-lg bg-white/95 backdrop-blur border border-slate-200 shadow-sm hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 text-xs font-medium text-slate-600 transition">
-          Bo'shatish
-        </button>
       </div>
 
-      <!-- Floating Bottom-Center Selected Person 5-Relation Quick Bar -->
+      <!-- Quick Action Bar -->
       <div id="selectedPersonQuickBar" class="hidden md:flex absolute bottom-4 left-1/2 -translate-x-1/2 z-10 bg-white/95 backdrop-blur border border-slate-200 rounded-2xl px-3.5 py-2 shadow-lg items-center gap-2 flex-wrap justify-center max-w-[92%]">
         <div class="flex items-center gap-1.5 pr-2 border-r border-slate-200">
           <span id="quickBarGenderDot" class="w-2.5 h-2.5 rounded-full bg-sky-600"></span>
           <span id="quickBarPersonName" class="text-xs font-bold text-slate-800 max-w-[140px] truncate">Shaxs</span>
         </div>
-        <button type="button" id="quickBarFatherBtn" class="px-2.5 py-1 rounded-lg bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-900 text-xs font-semibold transition">
-          + Otasi
-        </button>
-        <button type="button" id="quickBarMotherBtn" class="px-2.5 py-1 rounded-lg bg-pink-50 hover:bg-pink-100 border border-pink-200 text-pink-900 text-xs font-semibold transition">
-          + Onasi
-        </button>
-        <button type="button" id="quickBarSpouseBtn" class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-800 text-xs font-semibold transition">
-          + Turmush o'rtog'i
-        </button>
-        <button type="button" id="quickBarSonBtn" class="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-semibold transition">
-          + O'g'li
-        </button>
-        <button type="button" id="quickBarDaughterBtn" class="px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-900 text-xs font-semibold transition">
-          + Qizi
-        </button>
+        <button type="button" id="quickBarFatherBtn" class="px-2.5 py-1 rounded-lg bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-900 text-xs font-semibold transition">+ Otasi</button>
+        <button type="button" id="quickBarMotherBtn" class="px-2.5 py-1 rounded-lg bg-pink-50 hover:bg-pink-100 border border-pink-200 text-pink-900 text-xs font-semibold transition">+ Onasi</button>
+        <button type="button" id="quickBarSpouseBtn" class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-800 text-xs font-semibold transition">+ Turmush o'rtog'i</button>
+        <button type="button" id="quickBarSonBtn" class="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-semibold transition">+ O'g'li</button>
+        <button type="button" id="quickBarDaughterBtn" class="px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-900 text-xs font-semibold transition">+ Qizi</button>
       </div>
 
-      <!-- Floating Bottom-Left Zoom Controls -->
+      <!-- Zoom Controls -->
       <div class="absolute bottom-4 left-4 z-10 flex items-center gap-1 bg-white/95 backdrop-blur border border-slate-200 rounded-xl p-1 shadow-md">
         <button id="zoomOutBtn" title="Kichraytirish" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-base transition">−</button>
         <span id="zoomLevelText" class="text-xs font-semibold text-slate-600 px-2 min-w-[48px] text-center">100%</span>
         <button id="zoomInBtn" title="Kattalashtirish" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-base transition">+</button>
         <div class="w-px h-5 bg-slate-200 mx-0.5"></div>
-        <button id="zoomFitBtn" title="Markazga qaytarish" class="px-2.5 h-8 rounded-lg hover:bg-slate-100 flex items-center gap-1 text-xs font-medium text-slate-700 transition">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-          </svg>
-          Markazga
-        </button>
+        <button id="zoomFitBtn" title="Markazga qaytarish" class="px-2.5 h-8 rounded-lg hover:bg-slate-100 flex items-center gap-1 text-xs font-medium text-slate-700 transition">Markazga</button>
       </div>
 
-      <!-- Interactive SVG Viewport -->
+      <!-- SVG Viewport -->
       <div id="canvasViewport" class="w-full h-full cursor-grab active:cursor-grabbing overflow-hidden relative">
         <svg id="treeSvg" class="w-full h-full block" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="125%">
               <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.08" />
             </filter>
-            <linearGradient id="maleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#0284c7" />
-              <stop offset="100%" stop-color="#0369a1" />
-            </linearGradient>
-            <linearGradient id="femaleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#db2777" />
-              <stop offset="100%" stop-color="#be185d" />
-            </linearGradient>
           </defs>
           <g id="treeTransformGroup">
             <g id="linksLayer"></g>
@@ -257,288 +192,145 @@
       </div>
     </main>
 
-    <!-- Alternative View: Directory / Generation List View -->
+    <!-- List View -->
     <section id="listViewContainer" class="hidden flex-1 bg-slate-50 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
       <div class="max-w-5xl mx-auto space-y-6">
-        <!-- Stats Cards -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="statsGrid"></div>
-
-        <!-- Generation-grouped cards -->
         <div id="generationListWrapper" class="space-y-5"></div>
       </div>
     </section>
 
-    <!-- Right Inspector & Editor Sidebar -->
+    <!-- Inspector Sidebar -->
     <aside id="inspectorSidebar" class="w-full sm:w-80 md:w-96 bg-white border-l border-slate-200 flex flex-col z-20 shrink-0 shadow-lg sm:shadow-none absolute sm:relative inset-y-0 right-0 transform translate-x-full sm:translate-x-0 transition-transform duration-200">
-      <!-- Sidebar Header -->
       <div class="px-4 py-2.5 border-b border-slate-200 flex items-center justify-between bg-slate-50/70">
         <div class="flex items-center gap-2">
           <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-          <h2 class="font-bold text-sm text-slate-800" id="sidebarTitle">Shaxsni tahrirlash paneli</h2>
+          <h2 class="font-bold text-sm text-slate-800" id="sidebarTitle">Shaxsni tahrirlash</h2>
         </div>
-        <div class="flex items-center gap-1.5">
-          <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Avto-saqlash yoqilgan</span>
-          <button id="closeSidebarMobileBtn" class="sm:hidden p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+        <button id="closeSidebarMobileBtn" class="sm:hidden p-1 rounded-lg text-slate-400 hover:text-slate-700">✕</button>
       </div>
-
-      <!-- Selected Member Content -->
-      <div id="sidebarContent" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-        <!-- Populated dynamically by JS -->
-      </div>
+      <div id="sidebarContent" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar"></div>
     </aside>
-
-    <!-- Mobile Floating Button to open Sidebar when collapsed -->
-    <button id="openSidebarMobileBtn" class="sm:hidden fixed bottom-4 right-4 z-10 px-3.5 py-2.5 rounded-full bg-emerald-600 text-white shadow-lg font-semibold text-xs flex items-center gap-1.5">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-      </svg>
-      Tahrirlash paneli
-    </button>
   </div>
 
-  <!-- Modal: Multi-Tree Project Manager ("Mening Shajaralarim") -->
-  <div id="projectsModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden max-h-[90vh] flex flex-col">
-      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
-        <div>
-          <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
-            <span>📂</span>
-            <span>Mening Shajaralarim (Saqlangan ishlarim)</span>
-          </h3>
-          <p class="text-xs text-slate-500 mt-0.5">Har bir shajara alohida saqlanadi — istalgan payt kirib qayta ishlashingiz yoki yangi shajara ochishingiz mumkin</p>
-        </div>
-        <button id="closeProjectsModalBtn" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      <div class="p-5 overflow-y-auto space-y-5 custom-scrollbar flex-1">
-        <!-- Create New Separate Family Tree Box -->
-        <div class="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-3">
-          <div class="flex items-center justify-between">
-            <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-900">+ Yangi alohida shajara yaratish</h4>
-            <span class="text-[11px] text-emerald-700 font-medium">Hozirgi ishingiz o'chib ketmaydi!</span>
-          </div>
-          <div>
-            <label for="newProjectTitleInput" class="block text-xs font-semibold text-slate-700 mb-1">Yangi shajara nomi</label>
-            <input id="newProjectTitleInput" type="text" placeholder="Masalan: Onam tomonidan shajara, Qaynota-qaynona shajarasi..." class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <button type="button" id="createStarterCoupleTreeBtn" class="px-3 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-2xs flex items-center justify-center gap-1.5 transition">
-              <span>👨‍👩‍👦</span>
-              <span>Ota-Ona va Men shabloni</span>
-            </button>
-            <button type="button" id="createSingleRootTreeBtn" class="px-3 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition">
-              <span>👤</span>
-              <span>Bitta shaxsdan boshlash</span>
-            </button>
-            <button type="button" id="createSampleCopyTreeBtn" class="px-3 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition">
-              <span>🌳</span>
-              <span>Namuna shajara nusxasi</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Saved Projects List -->
-        <div>
-          <div class="flex items-center justify-between mb-2.5">
-            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Saqlangan shajaralar ro'yxati</h4>
-            <button type="button" id="saveCurrentSnapshotBtn" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
-              <span>+ Hozirgi shajaradan alohida nusxa saqlash</span>
-            </button>
-          </div>
-          <div id="projectsListContainer" class="space-y-2.5"></div>
-        </div>
-      </div>
-
-      <!-- Footer: Export/Import All Projects -->
-      <div class="px-5 py-3 border-t border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-2 shrink-0">
-        <p class="text-[11px] text-slate-500">Barcha shajaralarni kompyuter/telefonga zaxira fayl sifatida ham saqlab qo'yishingiz mumkin:</p>
-        <div class="flex items-center gap-2">
-          <button type="button" id="exportAllProjectsBtn" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold transition">
-            ⬇️ Barchasini yuklab olish (.JSON)
-          </button>
-          <label class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold cursor-pointer transition">
-            ⬆️ Fayldan shajara qo'shish
-            <input id="importProjectFileInput" type="file" accept=".json,application/json" class="hidden" />
-          </label>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal: Add Relative / Father / Mother / Spouse / Son / Daughter -->
+  <!-- Add Relative Modal -->
   <div id="addRelativeModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden max-h-[90vh] flex flex-col">
       <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
-        <h3 id="addModalTitle" class="font-bold text-slate-900 text-base">Yangi oila a'zosini qo'shish</h3>
-        <button id="closeAddModalBtn" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+        <h3 id="addModalTitle" class="font-bold text-slate-900 text-base">Yangi a'zo qo'shish</h3>
+        <button id="closeAddModalBtn" class="text-slate-400 hover:text-slate-600">✕</button>
       </div>
       <form id="addRelativeForm" class="p-5 space-y-3.5 overflow-y-auto custom-scrollbar">
         <input type="hidden" id="relTargetId" value="" />
         <input type="hidden" id="relTypeInput" value="child" />
-
         <div id="relContextBanner" class="px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-medium"></div>
-
-        <!-- Primary Person Section -->
-        <div class="space-y-3">
-          <p id="primaryFormHeading" class="hidden text-xs font-bold text-sky-800 bg-sky-50 px-2.5 py-1 rounded-md border border-sky-200">👨 Ota ma'lumotlari</p>
+        <div>
+          <label id="newFirstNameLabel" class="block text-xs font-semibold text-slate-700 mb-1" for="newFirstName">Ism va familiya *</label>
+          <input id="newFirstName" type="text" required placeholder="Masalan: Anvar Tilavov" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
           <div>
-            <label id="newFirstNameLabel" class="block text-xs font-semibold text-slate-700 mb-1" for="newFirstName">Ism va familiya *</label>
-            <input id="newFirstName" type="text" required placeholder="Masalan: Rustam Axmedov" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+            <label class="block text-xs font-semibold text-slate-700 mb-1" for="newGender">Jinsi</label>
+            <select id="newGender" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white">
+              <option value="male">Erkak</option>
+              <option value="female">Ayol</option>
+            </select>
           </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1" for="newGender">Jinsi</label>
-              <select id="newGender" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
-                <option value="male">Erkak</option>
-                <option value="female">Ayol</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1" for="newRoleLabel">Maqomi / Unvoni</label>
-              <input id="newRoleLabel" type="text" placeholder="Masalan: Otasi, Onasi, O'g'li, Qizi" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1" for="newBirthYear">Tug'ilgan yili</label>
-              <input id="newBirthYear" type="text" placeholder="Masalan: 1965" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1" for="newDeathYear">Vafot yili (ixtiyoriy)</label>
-              <input id="newDeathYear" type="text" placeholder="Hayot bo'lsa bo'sh" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1" for="newBirthPlace">Tug'ilgan joyi</label>
-              <input id="newBirthPlace" type="text" placeholder="Toshkent" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1" for="newOccupation">Kasbi / Sohasi</label>
-              <input id="newOccupation" type="text" placeholder="Muhandis, Ustoz..." class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-            </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1" for="newRoleLabel">Maqomi</label>
+            <input id="newRoleLabel" type="text" placeholder="Otasi, O'g'li..." class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg" />
           </div>
         </div>
-
-        <!-- Second Parent (Mother) Section when adding Married Parents Couple -->
-        <div id="secondParentSection" class="hidden pt-3 border-t border-slate-200 space-y-3">
-          <div class="flex items-center justify-between">
-            <p class="text-xs font-bold text-pink-800 bg-pink-50 px-2.5 py-1 rounded-md border border-pink-200">👩 Ona (Turmush o'rtog'i) ma'lumotlari</p>
-            <label class="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
-              <input type="checkbox" id="includeSecondParentCheck" checked class="rounded text-emerald-600 focus:ring-emerald-500" />
-              <span>Juftlik sifatida qo'shish</span>
-            </label>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1" for="newBirthYear">Tug'ilgan yili</label>
+            <input id="newBirthYear" type="text" placeholder="1970" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg" />
           </div>
-          <div id="secondParentFields" class="space-y-2.5">
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1" for="secondParentName">Onaning ismi va familiyasi</label>
-              <input id="secondParentName" type="text" placeholder="Masalan: Dilbar Axmedova" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500" />
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1" for="secondParentBirthYear">Tug'ilgan yili</label>
-                <input id="secondParentBirthYear" type="text" placeholder="Masalan: 1967" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1" for="secondParentOccupation">Kasbi / Sohasi</label>
-                <input id="secondParentOccupation" type="text" placeholder="Shifokor, Ustoz..." class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500" />
-              </div>
-            </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1" for="newDeathYear">Vafot yili</label>
+            <input id="newDeathYear" type="text" placeholder="Bo'sh qoldiring" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg" />
           </div>
         </div>
-
         <div class="pt-2 flex items-center justify-end gap-2">
-          <button type="button" id="cancelAddModalBtn" class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition">Bekor qilish</button>
-          <button type="submit" class="px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition">Qo'shish</button>
+          <button type="button" id="cancelAddModalBtn" class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100">Bekor qilish</button>
+          <button type="submit" class="px-4 py-2 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">Qo'shish</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal: Save / Load JSON Data -->
+  <!-- Data Modal -->
   <div id="dataModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden">
-      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-        <h3 class="font-bold text-slate-900 text-base">Shajarani faylga saqlash va yuklash</h3>
-        <button id="closeDataModalBtn" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden p-5 space-y-4">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 class="font-bold text-slate-900 text-base">Zaxira (JSON)</h3>
+        <button id="closeDataModalBtn" class="text-slate-400">✕</button>
       </div>
-      <div class="p-5 space-y-4">
-        <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-3">
-          <div>
-            <h4 class="text-xs font-bold text-emerald-950">Hozirgi shajarani kompyuterga yuklab olish (.JSON)</h4>
-            <p class="text-[11px] text-emerald-700 mt-0.5">Keyinchalik istalgan qurilmada qayta ochib davom ettirishingiz mumkin</p>
-          </div>
-          <button id="downloadJsonBtn" class="px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shrink-0 shadow-sm transition">
-            Yuklab olish
-          </button>
-        </div>
-
-        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
-          <div>
-            <h4 class="text-xs font-bold text-slate-800">Avval saqlangan shajara faylini ochish (.JSON)</h4>
-            <p class="text-[11px] text-slate-500 mt-0.5">Yangi alohida shajara sifatida ro'yxatingizga qo'shiladi (eskilari o'chmaydi)</p>
-          </div>
-          <label class="px-3.5 py-2 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold shrink-0 cursor-pointer shadow-2xs transition">
-            Faylni tanlash
-            <input id="uploadJsonInput" type="file" accept=".json,application/json" class="hidden" />
-          </label>
-        </div>
-
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <label for="jsonTextarea" class="text-xs font-semibold text-slate-700">Yoki JSON ma'lumot nusxasi:</label>
-            <button id="copyJsonTextBtn" type="button" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700">Nusxa olish</button>
-          </div>
-          <textarea id="jsonTextarea" rows="4" class="w-full p-2.5 text-xs font-mono bg-slate-900 text-emerald-300 rounded-lg border border-slate-700 focus:outline-none"></textarea>
-          <div class="mt-2 flex justify-end">
-            <button id="applyJsonTextBtn" type="button" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold transition">
-              Matndan tiklash
-            </button>
-          </div>
-        </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-700 block mb-1">JSON ma'lumot:</label>
+        <textarea id="jsonTextarea" rows="6" class="w-full p-2.5 text-xs font-mono bg-slate-900 text-emerald-300 rounded-lg"></textarea>
       </div>
     </div>
   </div>
 
-  <!-- Modal: Confirm Clear / Reset -->
+  <!-- Confirm Modal -->
   <div id="confirmModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-sm w-full shadow-2xl border border-slate-200 p-5 space-y-4">
       <h3 id="confirmModalTitle" class="font-bold text-slate-900 text-base">Tasdiqlash</h3>
-      <p id="confirmModalDesc" class="text-xs text-slate-600 leading-relaxed"></p>
+      <p id="confirmModalDesc" class="text-xs text-slate-600"></p>
       <div class="flex items-center justify-end gap-2 pt-2">
-        <button id="cancelConfirmBtn" type="button" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100">Bekor qilish</button>
-        <button id="acceptConfirmBtn" type="button" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white">Tasdiqlash</button>
+        <button id="cancelConfirmBtn" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600">Bekor qilish</button>
+        <button id="acceptConfirmBtn" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 text-white">Tasdiqlash</button>
       </div>
     </div>
   </div>
 
-  <!-- Toast Notification -->
+  <!-- Toast -->
   <div id="toastContainer" class="fixed bottom-5 right-5 z-50 pointer-events-none flex flex-col gap-2"></div>
 
   <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBfaw8mkfO9HuVVnjT5oFl49l3Gad93cdM",
+      authDomain: "tilavovlarshajarasi.firebaseapp.com",
+      databaseURL: "https://tilavovlarshajarasi-default-rtdb.firebaseio.com",
+      projectId: "tilavovlarshajarasi",
+      storageBucket: "tilavovlarshajarasi.firebasestorage.app",
+      messagingSenderId: "131863302267",
+      appId: "1:131863302267:web:fed81f2d088f4f8ece12de",
+      measurementId: "G-NBV8X0HR8M"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     (function () {
-      const STORAGE_KEY = 'uz_shajara_daraxti_v3';
-      const PROJECTS_STORAGE_KEY = 'uz_shajara_projects_v1';
+      let state = getSampleData();
+      let selectedId = state.members.length > 0 ? state.members[0].id : null;
+      let searchQuery = '';
+      let activeTab = 'tree';
+
+      let zoom = 1;
+      let panX = 0;
+      let panY = 0;
+      let isPanning = false;
+      let startPanX = 0;
+      let startPanY = 0;
+      let pendingConfirmAction = null;
+      let isFirebaseSyncing = false;
+
+      // Realtime listener from Firebase
+      db.ref('shajaraData').on('value', (snapshot) => {
+        if (isFirebaseSyncing) return;
+        const val = snapshot.val();
+        if (val && Array.isArray(val.members)) {
+          state = normalizeCouplesData(val);
+          if (!selectedId && state.members.length > 0) {
+            selectedId = state.members[0].id;
+          }
+          renderAll();
+        }
+      });
 
       function getNowFormatted() {
         const d = new Date();
@@ -546,422 +338,62 @@
         return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
       }
 
-      // Default 4-generation Uzbek family tree
       function getSampleData() {
         return {
-          projectId: 'proj_sample_default',
-          title: 'Axmedovlar Sulolasi Shajarasi',
-          subtitle: 'Sulola tarixi va avlodlar shajarasi (Tahrirlash uchun bosing)',
+          title: 'Tilavovlar Shajarasi',
+          subtitle: 'Sulola tarixi va avlodlar shajarasi (Umumiy baza)',
           updatedAt: getNowFormatted(),
           layoutDirection: 'vertical',
           theme: 'modern',
           members: [
             {
               id: 'm1',
-              name: 'Mahmudjon Axmedov',
-              role: 'Bobo (Sulola boshlig\'i)',
+              name: 'Tilavov (Boshboboo)',
+              role: 'Sulola boshlig\'i',
               gender: 'male',
-              birthYear: '1938',
-              deathYear: '2016',
+              birthYear: '1940',
+              deathYear: '',
               birthPlace: 'Toshkent',
-              occupation: 'Tarixchi ustoz',
-              bio: 'Mahalla oqsoqoli, 40 yillik pedagog va oila ustuni.',
+              occupation: 'Ustoz',
+              bio: 'Sulola asoschisi.',
               photo: '',
               cardColor: 'auto',
               fatherId: null,
               motherId: null,
               parentId: null,
               spouseId: 'm1_sp',
-              spouseName: 'Xadicha Axmedova',
+              spouseName: 'Xonzoda Tilavova',
               generation: 1
             },
             {
               id: 'm1_sp',
-              name: 'Xadicha Axmedova',
-              role: 'Buvi (Buvijon)',
+              name: 'Xonzoda Tilavova',
+              role: 'Buvi',
               gender: 'female',
-              birthYear: '1942',
-              deathYear: '2020',
+              birthYear: '1945',
+              deathYear: '',
               birthPlace: 'Toshkent',
-              occupation: 'Chevar va uy bekasi',
-              bio: 'Mehribon ona va mohir zardo\'z-chevar.',
+              occupation: 'Uy bekasi',
+              bio: 'Mehribon ona.',
               photo: '',
               cardColor: 'auto',
               fatherId: null,
               motherId: null,
               parentId: null,
               spouseId: 'm1',
-              spouseName: 'Mahmudjon Axmedov',
-              generation: 1
-            },
-            {
-              id: 'm2',
-              name: 'Rustam Axmedov',
-              role: 'Otasi (To\'ng\'ich o\'g\'il)',
-              gender: 'male',
-              birthYear: '1964',
-              deathYear: '',
-              birthPlace: 'Toshkent',
-              occupation: 'Muhandis-quruvchi',
-              bio: 'O\'zbekiston bo\'ylab ko\'plab inshootlar loyihachisi.',
-              photo: '',
-              cardColor: 'auto',
-              fatherId: 'm1',
-              motherId: 'm1_sp',
-              parentId: 'm1',
-              spouseId: 'm2_sp',
-              spouseName: 'Dilbar Axmedova',
-              generation: 2
-            },
-            {
-              id: 'm2_sp',
-              name: 'Dilbar Axmedova',
-              role: 'Onasi (Volida)',
-              gender: 'female',
-              birthYear: '1967',
-              deathYear: '',
-              birthPlace: 'Toshkent',
-              occupation: 'Ona tili va adabiyot ustozi',
-              bio: 'Maktabning eng faol va fidoyi muallimasi.',
-              photo: '',
-              cardColor: 'auto',
-              fatherId: null,
-              motherId: null,
-              parentId: null,
-              spouseId: 'm2',
-              spouseName: 'Rustam Axmedov',
-              generation: 2
-            },
-            {
-              id: 'm3',
-              name: 'Gulnora Karimova',
-              role: 'Qizi (Amma)',
-              gender: 'female',
-              birthYear: '1968',
-              deathYear: '',
-              birthPlace: 'Toshkent',
-              occupation: 'Shifokor-pediatr',
-              bio: 'Bolalar salomatligi bo\'yicha oliy toifali shifokor.',
-              photo: '',
-              cardColor: 'auto',
-              fatherId: 'm1',
-              motherId: 'm1_sp',
-              parentId: 'm1',
-              spouseId: 'm3_sp',
-              spouseName: 'Anvar Karimov',
-              generation: 2
-            },
-            {
-              id: 'm3_sp',
-              name: 'Anvar Karimov',
-              role: 'Turmush o\'rtog\'i (Pochcha)',
-              gender: 'male',
-              birthYear: '1966',
-              deathYear: '',
-              birthPlace: 'Samarqand',
-              occupation: 'Agronom olim',
-              bio: 'Qishloq xo\'jaligi fanlari nomzodi.',
-              photo: '',
-              cardColor: 'auto',
-              fatherId: null,
-              motherId: null,
-              parentId: null,
-              spouseId: 'm3',
-              spouseName: 'Gulnora Karimova',
-              generation: 2
-            },
-            {
-              id: 'm4',
-              name: 'Shavkat Axmedov',
-              role: 'O\'g\'li (Amaki)',
-              gender: 'male',
-              birthYear: '1973',
-              deathYear: '',
-              birthPlace: 'Toshkent',
-              occupation: 'Tadbirkor',
-              bio: 'Hunarmandchilik va yog\'och o\'ymakorligi ustasi.',
-              photo: '',
-              cardColor: 'auto',
-              fatherId: 'm1',
-              motherId: 'm1_sp',
-              parentId: 'm1',
-              spouseId: 'm4_sp',
-              spouseName: 'Feruza Axmedova',
-              generation: 2
-            },
-            {
-              id: 'm4_sp',
-              name: 'Feruza Axmedova',
-              role: 'Turmush o\'rtog\'i (Kelinoyi)',
-              gender: 'female',
-              birthYear: '1976',
-              deathYear: '',
-              birthPlace: 'Buxoro',
-              occupation: 'Bosh hisobchi',
-              bio: 'Moliya va hisob-kitob sohasida tajribali mutaxassis.',
-              photo: '',
-              cardColor: 'auto',
-              fatherId: null,
-              motherId: null,
-              parentId: null,
-              spouseId: 'm4',
-              spouseName: 'Shavkat Axmedov',
-              generation: 2
-            },
-            {
-              id: 'm5',
-              name: 'Sardor Axmedov',
-              role: 'O\'g\'li (Men)',
-              gender: 'male',
-              birthYear: '1991',
-              deathYear: '',
-              birthPlace: 'Toshkent',
-              occupation: 'Dasturiy ta\'minot muhandisi',
-              bio: 'Zamonaviy texnologiyalar va oila tarixi tadqiqotchisi.',
-              photo: '',
-              cardColor: 'auto',
-              fatherId: 'm2',
-              motherId: 'm2_sp',
-              parentId: 'm2',
-              spouseId: 'm5_sp',
-              spouseName: 'Madina Axmedova',
-              generation: 3
-            },
-            {
-              id: 'm5_sp',
-              name: 'Madina Axmedova',
-              role: 'Turmush o\'rtog\'i (Rafiqa)',
-              gender: 'female',
-              birthYear: '1994',
-              deathYear: '',
-              birthPlace: 'Toshkent',
-              occupation: 'Grafik dizayner',
-              bio: 'Ijodkor rassom va zamonaviy dizayner.',
-              photo: '',
-              cardColor: 'auto',
-              fatherId: null,
-              motherId: null,
-              parentId: null,
-              spouseId: 'm5',
-              spouseName: 'Sardor Axmedov',
-              generation: 3
-            },
-            {
-              id: 'm6',
-              name: 'Sevara Axmedova',
-              role: 'Qizi (Singil)',
-              gender: 'female',
-              birthYear: '1995',
-              deathYear: '',
-              birthPlace: 'Toshkent',
-              occupation: 'Arxitektor-dizayner',
-              bio: 'Milliy va zamonaviy me\'morchilik uyg\'unligi ustasi.',
-              photo: '',
-              cardColor: 'auto',
-              fatherId: 'm2',
-              motherId: 'm2_sp',
-              parentId: 'm2',
-              spouseId: null,
-              spouseName: '',
-              generation: 3
-            },
-            {
-              id: 'm7',
-              name: 'Javohir Karimov',
-              role: 'O\'g\'li (Ammavachcha)',
-              gender: 'male',
-              birthYear: '1993',
-              deathYear: '',
-              birthPlace: 'Samarqand',
-              occupation: 'Iqtisodchi',
-              bio: 'Xalqaro moliya mutaxassisi.',
-              photo: '',
-              cardColor: 'auto',
-              fatherId: 'm3_sp',
-              motherId: 'm3',
-              parentId: 'm3',
-              spouseId: null,
-              spouseName: '',
-              generation: 3
-            },
-            {
-              id: 'm8',
-              name: 'Bobur Axmedov',
-              role: 'O\'g\'li (Amakivachcha)',
-              gender: 'male',
-              birthYear: '1999',
-              deathYear: '',
-              birthPlace: 'Toshkent',
-              occupation: 'Shifokor-rezident',
-              bio: 'Tibbiyot akademiyasi magistranti.',
-              photo: '',
-              cardColor: 'auto',
-              fatherId: 'm4',
-              motherId: 'm4_sp',
-              parentId: 'm4',
-              spouseId: null,
-              spouseName: '',
-              generation: 3
-            },
-            {
-              id: 'm9',
-              name: 'Amirxon Axmedov',
-              role: 'O\'g\'li (To\'ng\'ich farzand)',
-              gender: 'male',
-              birthYear: '2018',
-              deathYear: '',
-              birthPlace: 'Toshkent',
-              occupation: 'Maktab o\'quvchisi',
-              bio: 'Shaxmat va matematika to\'garagi a\'lochisi.',
-              photo: '',
-              cardColor: 'auto',
-              fatherId: 'm5',
-              motherId: 'm5_sp',
-              parentId: 'm5',
-              spouseId: null,
-              spouseName: '',
-              generation: 4
-            },
-            {
-              id: 'm10',
-              name: 'Yasmina Axmedova',
-              role: 'Qizi (Kenja farzand)',
-              gender: 'female',
-              birthYear: '2022',
-              deathYear: '',
-              birthPlace: 'Toshkent',
-              occupation: 'Bog\'cha tarbiyalanuvchisi',
-              bio: 'Oilaning eng erka va quvnoq a\'zosi.',
-              photo: '',
-              cardColor: 'auto',
-              fatherId: 'm5',
-              motherId: 'm5_sp',
-              parentId: 'm5',
-              spouseId: null,
-              spouseName: '',
-              generation: 4
-            }
-          ]
-        };
-      }
-
-      // Starter template: Ota + Ona + Men
-      function getStarterMyFamilyData(customTitle) {
-        return {
-          projectId: 'proj_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 6),
-          title: customTitle || 'Mening Oila Shajaram',
-          subtitle: 'Sulola tarixi va avlodlar shajarasi',
-          updatedAt: getNowFormatted(),
-          layoutDirection: 'vertical',
-          theme: 'modern',
-          members: [
-            {
-              id: 'ota_1',
-              name: 'Otam (Ism-familiyasi)',
-              role: 'Otasi',
-              gender: 'male',
-              birthYear: '1970',
-              deathYear: '',
-              birthPlace: 'Toshkent',
-              occupation: '',
-              bio: '',
-              photo: '',
-              cardColor: 'auto',
-              fatherId: null,
-              motherId: null,
-              parentId: null,
-              spouseId: 'ona_1',
-              spouseName: 'Onam (Ism-familiyasi)',
-              generation: 1
-            },
-            {
-              id: 'ona_1',
-              name: 'Onam (Ism-familiyasi)',
-              role: 'Onasi',
-              gender: 'female',
-              birthYear: '1973',
-              deathYear: '',
-              birthPlace: 'Toshkent',
-              occupation: '',
-              bio: '',
-              photo: '',
-              cardColor: 'auto',
-              fatherId: null,
-              motherId: null,
-              parentId: null,
-              spouseId: 'ota_1',
-              spouseName: 'Otam (Ism-familiyasi)',
-              generation: 1
-            },
-            {
-              id: 'men_1',
-              name: 'Men (Ism-familiyam)',
-              role: 'O\'g\'li (Shajara tuzuvchi)',
-              gender: 'male',
-              birthYear: '1998',
-              deathYear: '',
-              birthPlace: 'Toshkent',
-              occupation: '',
-              bio: '',
-              photo: '',
-              cardColor: 'auto',
-              fatherId: 'ota_1',
-              motherId: 'ona_1',
-              parentId: 'ota_1',
-              spouseId: null,
-              spouseName: '',
-              generation: 2
-            }
-          ]
-        };
-      }
-
-      // Single person starter template
-      function getSingleRootFamilyData(customTitle) {
-        return {
-          projectId: 'proj_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 6),
-          title: customTitle || 'Yangi Shajara',
-          subtitle: 'Sulola tarixi va avlodlar shajarasi',
-          updatedAt: getNowFormatted(),
-          layoutDirection: 'vertical',
-          theme: 'modern',
-          members: [
-            {
-              id: 'men_root_1',
-              name: 'Asosiy Shaxs (Ism-familiyasi)',
-              role: 'Shajara asoschisi',
-              gender: 'male',
-              birthYear: '1995',
-              deathYear: '',
-              birthPlace: 'Toshkent',
-              occupation: '',
-              bio: '',
-              photo: '',
-              cardColor: 'auto',
-              fatherId: null,
-              motherId: null,
-              parentId: null,
-              spouseId: null,
-              spouseName: '',
+              spouseName: 'Tilavov',
               generation: 1
             }
           ]
         };
       }
 
-      // Synchronize fatherId, motherId, parentId, and mutual spouseId links for all members
       function normalizeCouplesData(data) {
         if (!data || !Array.isArray(data.members)) return getSampleData();
-        if (!data.projectId) {
-          data.projectId = 'proj_' + Date.now().toString(36);
-        }
-        if (!data.subtitle) {
-          data.subtitle = 'Sulola tarixi va avlodlar shajarasi';
-        }
+        if (!data.subtitle) data.subtitle = 'Sulola tarixi va avlodlar shajarasi';
         const map = new Map();
         data.members.forEach(m => map.set(m.id, m));
 
-        // 1. Ensure mutual spouseId links
         data.members.forEach(m => {
           if (m.spouseId && map.has(m.spouseId) && m.spouseId !== m.id) {
             const sp = map.get(m.spouseId);
@@ -973,742 +405,265 @@
             m.spouseName = '';
           }
         });
-
-        // 2. Ensure fatherId, motherId, and parentId are consistent
-        data.members.forEach(m => {
-          if (m.fatherId && (!map.has(m.fatherId) || m.fatherId === m.id)) m.fatherId = null;
-          if (m.motherId && (!map.has(m.motherId) || m.motherId === m.id)) m.motherId = null;
-          if (m.parentId && (!map.has(m.parentId) || m.parentId === m.id)) m.parentId = null;
-
-          if (!m.fatherId && !m.motherId && m.parentId) {
-            const p = map.get(m.parentId);
-            if (p) {
-              if (p.gender === 'female') {
-                m.motherId = p.id;
-                if (p.spouseId && map.has(p.spouseId)) m.fatherId = p.spouseId;
-              } else {
-                m.fatherId = p.id;
-                if (p.spouseId && map.has(p.spouseId)) m.motherId = p.spouseId;
-              }
-            }
-          }
-
-          if (m.fatherId && !m.motherId) {
-            const f = map.get(m.fatherId);
-            if (f && f.spouseId && map.has(f.spouseId)) {
-              m.motherId = f.spouseId;
-            }
-          }
-          if (m.motherId && !m.fatherId) {
-            const mo = map.get(m.motherId);
-            if (mo && mo.spouseId && map.has(mo.spouseId)) {
-              m.fatherId = mo.spouseId;
-            }
-          }
-
-          if (m.fatherId && m.motherId && m.fatherId !== m.motherId) {
-            const f = map.get(m.fatherId);
-            const mo = map.get(m.motherId);
-            if (f && mo && !f.spouseId && !mo.spouseId) {
-              f.spouseId = mo.id;
-              mo.spouseId = f.id;
-              f.spouseName = mo.name;
-              mo.spouseName = f.name;
-            }
-          }
-
-          m.parentId = m.fatherId || m.motherId || null;
-        });
-
         return data;
       }
 
-      // Multi-Project State Management
-      let projectsStore = loadProjectsStore();
-      let state = getActiveProjectState();
-      let selectedId = state.members.length > 0 ? state.members[0].id : null;
-      let searchQuery = '';
-      let activeTab = 'tree';
-
-      // Pan & Zoom state
-      let zoom = 1;
-      let panX = 0;
-      let panY = 0;
-      let isPanning = false;
-      let startPanX = 0;
-      let startPanY = 0;
-      let pendingConfirmAction = null;
-
-      function loadProjectsStore() {
-        try {
-          const rawProjects = localStorage.getItem(PROJECTS_STORAGE_KEY);
-          if (rawProjects) {
-            const parsed = JSON.parse(rawProjects);
-            if (parsed && Array.isArray(parsed.projects) && parsed.projects.length > 0) {
-              parsed.projects = parsed.projects.map(p => normalizeCouplesData(p));
-              return parsed;
-            }
-          }
-          // Check legacy single-tree keys so earlier user work is preserved!
-          const legacyKeys = ['uz_shajara_daraxti_v3', 'uz_shajara_daraxti_v2', 'uz_shajara_daraxti_v1'];
-          for (const k of legacyKeys) {
-            const rawLegacy = localStorage.getItem(k);
-            if (rawLegacy) {
-              const p = JSON.parse(rawLegacy);
-              if (p && Array.isArray(p.members) && p.members.length > 0) {
-                const norm = normalizeCouplesData(p);
-                return {
-                  activeProjectId: norm.projectId,
-                  projects: [norm]
-                };
-              }
-            }
-          }
-        } catch (err) {
-          // Ignore storage errors
-        }
-        const initial = getSampleData();
-        return {
-          activeProjectId: initial.projectId,
-          projects: [initial]
-        };
-      }
-
-      function getActiveProjectState() {
-        const found = projectsStore.projects.find(p => p.projectId === projectsStore.activeProjectId);
-        if (found) return found;
-        return projectsStore.projects[0];
-      }
-
-      function saveState(showBadgeUpdate) {
+      function saveState(showToastMsg = true) {
         normalizeCouplesData(state);
         state.updatedAt = getNowFormatted();
-
-        const idx = projectsStore.projects.findIndex(p => p.projectId === state.projectId);
-        if (idx >= 0) {
-          projectsStore.projects[idx] = state;
-        } else {
-          projectsStore.projects.unshift(state);
-        }
-        projectsStore.activeProjectId = state.projectId;
-
-        try {
-          localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projectsStore));
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-        } catch (err) {
-          // Ignore storage errors
-        }
-
-        const countBadge = document.getElementById('projectsCountBadge');
-        if (countBadge) countBadge.textContent = String(projectsStore.projects.length);
-
-        const saveBadge = document.getElementById('saveStatusBadge');
-        if (saveBadge && showBadgeUpdate !== false) {
-          const timePart = (state.updatedAt || '').split(' ')[1] || '';
-          saveBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Saqlandi (${timePart})`;
-        }
-      }
-
-      function switchToProject(projectId) {
-        saveState(false);
-        const target = projectsStore.projects.find(p => p.projectId === projectId);
-        if (!target) return;
-        projectsStore.activeProjectId = target.projectId;
-        state = normalizeCouplesData(target);
-        selectedId = state.members.length > 0 ? state.members[0].id : null;
-        saveState();
-        renderAll();
-        fitTreeToViewport();
-      }
-
-      function createAndSwitchProject(newProjData) {
-        // Save current active project first
-        saveState(false);
-        const norm = normalizeCouplesData(newProjData);
-        projectsStore.projects.unshift(norm);
-        projectsStore.activeProjectId = norm.projectId;
-        state = norm;
-        selectedId = state.members.length > 0 ? state.members[0].id : null;
-        saveState();
-        renderAll();
-        fitTreeToViewport();
+        isFirebaseSyncing = true;
+        db.ref('shajaraData').set(state).then(() => {
+          isFirebaseSyncing = false;
+          if (showToastMsg) showToast('Barcha o\'zgarishlar internet bazasiga saqlandi! ☁️');
+        }).catch(() => {
+          isFirebaseSyncing = false;
+          showToast('Saqlashda xatolik yuz berdi', 'error');
+        });
       }
 
       function showToast(message, type) {
         const container = document.getElementById('toastContainer');
         const el = document.createElement('div');
-        const bgClass = type === 'error'
-          ? 'bg-rose-600 text-white'
-          : 'bg-slate-900 text-white';
-        el.className = `px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold flex items-center gap-2 transition-all duration-200 ${bgClass}`;
+        el.className = `px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold flex items-center gap-2 transition-all duration-200 ${type === 'error' ? 'bg-rose-600 text-white' : 'bg-slate-900 text-white'}`;
         el.textContent = message;
         container.appendChild(el);
-        setTimeout(() => {
-          el.style.opacity = '0';
-          setTimeout(() => el.remove(), 220);
-        }, 2600);
+        setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 220); }, 2600);
       }
 
       function generateId() {
         return 'm_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 6);
       }
 
-      // Compute generation depth for every member
       function recomputeGenerations() {
         const map = new Map();
-        state.members.forEach(m => {
-          map.set(m.id, m);
-          m.generation = 1;
-        });
-
-        const maxIterations = state.members.length + 6;
-
-        for (let iter = 0; iter < maxIterations; iter++) {
+        state.members.forEach(m => { map.set(m.id, m); m.generation = 1; });
+        const maxIter = state.members.length + 6;
+        for (let i = 0; i < maxIter; i++) {
           let changed = false;
           state.members.forEach(m => {
             const f = m.fatherId ? map.get(m.fatherId) : null;
             const mo = m.motherId ? map.get(m.motherId) : null;
             const p = m.parentId ? map.get(m.parentId) : null;
-
             let minAllowed = 1;
             if (f && f.id !== m.id) minAllowed = Math.max(minAllowed, (f.generation || 1) + 1);
             if (mo && mo.id !== m.id) minAllowed = Math.max(minAllowed, (mo.generation || 1) + 1);
             if (p && p.id !== m.id) minAllowed = Math.max(minAllowed, (p.generation || 1) + 1);
-
-            if (m.generation < minAllowed) {
-              m.generation = minAllowed;
-              changed = true;
-            }
-          });
-
-          state.members.forEach(m => {
-            if (m.spouseId && map.has(m.spouseId)) {
-              const sp = map.get(m.spouseId);
-              const sharedGen = Math.max(m.generation || 1, sp.generation || 1);
-              if (m.generation !== sharedGen || sp.generation !== sharedGen) {
-                m.generation = sharedGen;
-                sp.generation = sharedGen;
-                changed = true;
-              }
-            }
-          });
-
-          if (!changed) break;
-        }
-
-        // Bottom-up alignment for in-law parents
-        for (let iter = 0; iter < maxIterations; iter++) {
-          let changed = false;
-          state.members.forEach(parent => {
-            const kids = state.members.filter(c =>
-              c.fatherId === parent.id || c.motherId === parent.id || c.parentId === parent.id
-            );
-            if (kids.length > 0) {
-              const minChildGen = Math.min(...kids.map(k => k.generation || 2));
-              const targetGen = Math.max(1, minChildGen - 1);
-              if (parent.generation < targetGen) {
-                parent.generation = targetGen;
-                if (parent.spouseId && map.has(parent.spouseId)) {
-                  map.get(parent.spouseId).generation = targetGen;
-                }
-                changed = true;
-              }
-            }
+            if (m.generation < minAllowed) { m.generation = minAllowed; changed = true; }
           });
           if (!changed) break;
         }
       }
 
-      function hasParentsInTree(m, memberMap) {
-        if (!m) return false;
-        return Boolean(
-          (m.fatherId && memberMap.has(m.fatherId)) ||
-          (m.motherId && memberMap.has(m.motherId)) ||
-          (m.parentId && memberMap.has(m.parentId))
-        );
-      }
-
-      // Couple-Aware Hierarchical Tree Layout Algorithm
       function computeTreeLayout() {
         normalizeCouplesData(state);
         recomputeGenerations();
-
         const isHorizontal = state.layoutDirection === 'horizontal';
-        const nodeW = 220;
-        const nodeH = 128;
-        const spouseGap = isHorizontal ? 34 : 38;
-        const siblingGap = isHorizontal ? 32 : 36;
-        const levelGap = isHorizontal ? 98 : 94;
-
+        const nodeW = 220, nodeH = 128, spouseGap = isHorizontal ? 34 : 38, siblingGap = isHorizontal ? 32 : 36, levelGap = isHorizontal ? 98 : 94;
         const memberMap = new Map();
         state.members.forEach(m => memberMap.set(m.id, m));
 
-        const partnerPairedAsSecondary = new Set();
+        const partnerPaired = new Set();
         const primaryToPartner = new Map();
-        const memberToUnitPrimary = new Map();
+        const unitPrimary = new Map();
 
         state.members.forEach(m => {
-          if (partnerPairedAsSecondary.has(m.id) || primaryToPartner.has(m.id)) return;
+          if (partnerPaired.has(m.id) || primaryToPartner.has(m.id)) return;
           if (m.spouseId && memberMap.has(m.spouseId)) {
             const sp = memberMap.get(m.spouseId);
-            if (partnerPairedAsSecondary.has(sp.id) || primaryToPartner.has(sp.id)) return;
-
-            const mHasP = hasParentsInTree(m, memberMap);
-            const spHasP = hasParentsInTree(sp, memberMap);
-
-            let primary = m;
-            let secondary = sp;
-            if (!mHasP && spHasP) {
-              primary = sp;
-              secondary = m;
-            } else if (mHasP === spHasP && m.gender === 'female' && sp.gender === 'male') {
-              primary = sp;
-              secondary = m;
-            }
-
-            primaryToPartner.set(primary.id, secondary);
-            partnerPairedAsSecondary.add(secondary.id);
-            memberToUnitPrimary.set(primary.id, primary.id);
-            memberToUnitPrimary.set(secondary.id, primary.id);
+            if (partnerPaired.has(sp.id) || primaryToPartner.has(sp.id)) return;
+            primaryToPartner.set(m.id, sp);
+            partnerPaired.add(sp.id);
+            unitPrimary.set(m.id, m.id);
+            unitPrimary.set(sp.id, m.id);
           } else {
-            memberToUnitPrimary.set(m.id, m.id);
-          }
-        });
-
-        function getParentUnitIdOfMember(person) {
-          if (!person) return null;
-          const pId = person.fatherId || person.motherId || person.parentId;
-          if (pId && memberMap.has(pId)) {
-            return memberToUnitPrimary.get(pId) || pId;
-          }
-          return null;
-        }
-
-        const unitChildren = new Map();
-        state.members.forEach(m => {
-          if (!partnerPairedAsSecondary.has(m.id)) {
-            unitChildren.set(m.id, []);
+            unitPrimary.set(m.id, m.id);
           }
         });
 
         const rootUnits = [];
         state.members.forEach(m => {
-          if (partnerPairedAsSecondary.has(m.id)) return;
-          const partner = primaryToPartner.get(m.id);
-
-          let layoutParentUnitId = getParentUnitIdOfMember(m);
-          if (!layoutParentUnitId && partner) {
-            layoutParentUnitId = getParentUnitIdOfMember(partner);
-          }
-
-          if (layoutParentUnitId && unitChildren.has(layoutParentUnitId) && layoutParentUnitId !== m.id) {
-            unitChildren.get(layoutParentUnitId).push(m);
-          } else {
-            rootUnits.push(m);
-          }
+          if (partnerPaired.has(m.id)) return;
+          const pId = m.fatherId || m.motherId || m.parentId;
+          if (!pId || !memberMap.has(pId)) rootUnits.push(m);
         });
+        if (rootUnits.length === 0 && state.members.length > 0) rootUnits.push(state.members[0]);
 
-        const unitSpanMap = new Map();
-        const visitedMeasure = new Set();
-
-        function measureUnit(primary) {
-          if (visitedMeasure.has(primary.id)) return nodeW;
-          visitedMeasure.add(primary.id);
-
-          const hasPartner = primaryToPartner.has(primary.id);
-          const singleBreadth = isHorizontal ? nodeH : nodeW;
-          const ownBreadth = hasPartner ? (singleBreadth * 2 + spouseGap) : singleBreadth;
-
-          const kids = unitChildren.get(primary.id) || [];
-          if (kids.length === 0) {
-            unitSpanMap.set(primary.id, ownBreadth);
-            return ownBreadth;
-          }
-
-          let childrenTotal = 0;
-          kids.forEach((k, idx) => {
-            if (idx > 0) childrenTotal += siblingGap;
-            childrenTotal += measureUnit(k);
-          });
-
-          const span = Math.max(ownBreadth, childrenTotal);
-          unitSpanMap.set(primary.id, span);
+        const unitSpan = new Map();
+        function measure(primary) {
+          const hasP = primaryToPartner.has(primary.id);
+          const single = isHorizontal ? nodeH : nodeW;
+          const own = hasP ? (single * 2 + spouseGap) : single;
+          const kids = state.members.filter(c => c.fatherId === primary.id || c.motherId === primary.id || c.parentId === primary.id);
+          if (kids.length === 0) { unitSpan.set(primary.id, own); return own; }
+          let kidsTotal = 0;
+          kids.forEach((k, idx) => { if (idx > 0) kidsTotal += siblingGap; kidsTotal += measure(k); });
+          const span = Math.max(own, kidsTotal);
+          unitSpan.set(primary.id, span);
           return span;
         }
-
-        rootUnits.forEach(r => measureUnit(r));
+        rootUnits.forEach(r => measure(r));
 
         const positions = new Map();
         const couplesList = [];
-        const visitedPlace = new Set();
+        const visited = new Set();
 
-        function placeUnit(primary, breadthStart) {
-          if (visitedPlace.has(primary.id)) return;
-          visitedPlace.add(primary.id);
-
+        function place(primary, breadthStart) {
+          if (visited.has(primary.id)) return;
+          visited.add(primary.id);
           const depth = Math.max(0, (primary.generation || 1) - 1);
-          const span = unitSpanMap.get(primary.id) || (isHorizontal ? nodeH : nodeW);
-          const centerBreadth = breadthStart + span / 2;
+          const span = unitSpan.get(primary.id) || (isHorizontal ? nodeH : nodeW);
+          const center = breadthStart + span / 2;
           const partner = primaryToPartner.get(primary.id);
-          const kids = unitChildren.get(primary.id) || [];
-
-          const allBioChildren = state.members.filter(c => {
-            const pUnit = getParentUnitIdOfMember(c);
-            return pUnit === primary.id;
-          });
+          const kids = state.members.filter(c => c.fatherId === primary.id || c.motherId === primary.id || c.parentId === primary.id);
 
           if (!isHorizontal) {
             const y = depth * (nodeH + levelGap);
             if (partner) {
-              const p1X = centerBreadth - spouseGap / 2 - nodeW;
-              const p2X = centerBreadth + spouseGap / 2;
-              positions.set(primary.id, { x: p1X, y, w: nodeW, h: nodeH, depth });
-              positions.set(partner.id, { x: p2X, y, w: nodeW, h: nodeH, depth });
-              couplesList.push({
-                primaryId: primary.id,
-                partnerId: partner.id,
-                unionX: centerBreadth,
-                unionY: y + nodeH / 2,
-                kids: allBioChildren.map(k => k.id)
-              });
+              positions.set(primary.id, { x: center - spouseGap / 2 - nodeW, y, w: nodeW, h: nodeH });
+              positions.set(partner.id, { x: center + spouseGap / 2, y, w: nodeW, h: nodeH });
+              couplesList.push({ primaryId: primary.id, partnerId: partner.id, unionX: center, unionY: y + nodeH / 2, kids: kids.map(k => k.id) });
             } else {
-              const p1X = centerBreadth - nodeW / 2;
-              positions.set(primary.id, { x: p1X, y, w: nodeW, h: nodeH, depth });
-              couplesList.push({
-                primaryId: primary.id,
-                partnerId: null,
-                unionX: centerBreadth,
-                unionY: y + nodeH,
-                kids: allBioChildren.map(k => k.id)
-              });
-            }
-          } else {
-            const x = depth * (nodeW + levelGap);
-            if (partner) {
-              const p1Y = centerBreadth - spouseGap / 2 - nodeH;
-              const p2Y = centerBreadth + spouseGap / 2;
-              positions.set(primary.id, { x, y: p1Y, w: nodeW, h: nodeH, depth });
-              positions.set(partner.id, { x, y: p2Y, w: nodeW, h: nodeH, depth });
-              couplesList.push({
-                primaryId: primary.id,
-                partnerId: partner.id,
-                unionX: x + nodeW / 2,
-                unionY: centerBreadth,
-                kids: allBioChildren.map(k => k.id)
-              });
-            } else {
-              const p1Y = centerBreadth - nodeH / 2;
-              positions.set(primary.id, { x, y: p1Y, w: nodeW, h: nodeH, depth });
-              couplesList.push({
-                primaryId: primary.id,
-                partnerId: null,
-                unionX: x + nodeW,
-                unionY: centerBreadth,
-                kids: allBioChildren.map(k => k.id)
-              });
+              positions.set(primary.id, { x: center - nodeW / 2, y, w: nodeW, h: nodeH });
+              couplesList.push({ primaryId: primary.id, partnerId: null, unionX: center, unionY: y + nodeH, kids: kids.map(k => k.id) });
             }
           }
-
           if (kids.length > 0) {
-            let totalKidsSpan = 0;
-            kids.forEach((k, i) => {
-              if (i > 0) totalKidsSpan += siblingGap;
-              totalKidsSpan += unitSpanMap.get(k.id) || (isHorizontal ? nodeH : nodeW);
-            });
-            let childCursor = centerBreadth - totalKidsSpan / 2;
+            let totalK = 0;
+            kids.forEach((k, i) => { if (i > 0) totalK += siblingGap; totalK += unitSpan.get(k.id) || nodeW; });
+            let cursor = center - totalK / 2;
             kids.forEach(k => {
-              const kSpan = unitSpanMap.get(k.id) || (isHorizontal ? nodeH : nodeW);
-              placeUnit(k, childCursor);
-              childCursor += kSpan + siblingGap;
+              const kSpan = unitSpan.get(k.id) || nodeW;
+              place(k, cursor);
+              cursor += kSpan + siblingGap;
             });
           }
         }
 
-        let rootCursor = 0;
+        let cursor = 0;
         rootUnits.forEach((r, idx) => {
-          if (idx > 0) rootCursor += siblingGap * 1.4;
-          const rSpan = unitSpanMap.get(r.id) || (isHorizontal ? nodeH : nodeW);
-          placeUnit(r, rootCursor);
-          rootCursor += rSpan;
+          if (idx > 0) cursor += siblingGap * 1.4;
+          const span = unitSpan.get(r.id) || nodeW;
+          place(r, cursor);
+          cursor += span;
         });
 
         state.members.forEach(m => {
-          if (!positions.has(m.id)) {
-            positions.set(m.id, { x: rootCursor, y: 0, w: nodeW, h: nodeH, depth: 0 });
-            rootCursor += nodeW + siblingGap;
-          }
+          if (!positions.has(m.id)) positions.set(m.id, { x: cursor, y: 0, w: nodeW, h: nodeH });
         });
 
-        return { positions, couplesList, nodeW, nodeH, isHorizontal };
+        return { positions, couplesList, isHorizontal };
       }
 
       function escapeHtml(str) {
-        return String(str || '')
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;');
+        return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       }
 
       function getInitials(name) {
         const parts = String(name || '').trim().split(/\s+/);
         if (parts.length === 0 || !parts[0]) return '?';
-        if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-        return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
+        return parts.length === 1 ? parts[0].charAt(0).toUpperCase() : (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
       }
 
       function getCardAccentColor(m) {
-        const palette = {
-          sky: '#0284c7',
-          pink: '#db2777',
-          emerald: '#059669',
-          amber: '#d97706',
-          purple: '#7c3aed',
-          slate: '#475569'
-        };
-        if (m.cardColor && palette[m.cardColor]) return palette[m.cardColor];
         return m.gender === 'female' ? '#db2777' : '#0284c7';
       }
 
-      // Update the floating 5-button quick bar on the canvas
       function updateQuickBar() {
         const bar = document.getElementById('selectedPersonQuickBar');
         const member = state.members.find(m => m.id === selectedId);
-        if (!member) {
-          bar.classList.add('hidden');
-          return;
-        }
+        if (!member) { bar.classList.add('hidden'); return; }
         bar.classList.remove('hidden');
         document.getElementById('quickBarPersonName').textContent = member.name;
-        document.getElementById('quickBarGenderDot').className =
-          `w-2.5 h-2.5 rounded-full ${member.gender === 'female' ? 'bg-pink-600' : 'bg-sky-600'}`;
-
-        const father = member.fatherId ? state.members.find(x => x.id === member.fatherId) : null;
-        const mother = member.motherId ? state.members.find(x => x.id === member.motherId) : null;
-        const spouse = member.spouseId ? state.members.find(x => x.id === member.spouseId) : null;
-
-        document.getElementById('quickBarFatherBtn').textContent = father ? `👨 Otasi ✓` : `+ Otasi`;
-        document.getElementById('quickBarMotherBtn').textContent = mother ? `👩 Onasi ✓` : `+ Onasi`;
-        document.getElementById('quickBarSpouseBtn').textContent = spouse ? `💍 Turmush o'rtog'i ✓` : `+ Turmush o'rtog'i`;
+        document.getElementById('quickBarGenderDot').className = `w-2.5 h-2.5 rounded-full ${member.gender === 'female' ? 'bg-pink-600' : 'bg-sky-600'}`;
       }
 
-      // Render SVG Tree
       function renderTree() {
         const linksLayer = document.getElementById('linksLayer');
         const nodesLayer = document.getElementById('nodesLayer');
         linksLayer.innerHTML = '';
         nodesLayer.innerHTML = '';
 
-        const titleInput = document.getElementById('familyTitleInput');
-        if (document.activeElement !== titleInput) {
-          titleInput.value = state.title || 'Mening Oila Shajaram';
-        }
-        const subtitleInput = document.getElementById('familySubtitleInput');
-        if (subtitleInput && document.activeElement !== subtitleInput) {
-          subtitleInput.value = state.subtitle || 'Sulola tarixi va avlodlar shajarasi';
-        }
-
+        document.getElementById('familyTitleInput').value = state.title || 'Tilavovlar Shajarasi';
         document.getElementById('memberCountBadge').textContent = `${state.members.length} kishi`;
-        document.getElementById('layoutDirLabel').textContent = state.layoutDirection === 'horizontal' ? 'Gorizontal' : 'Vertikal';
-        document.getElementById('projectsCountBadge').textContent = String(projectsStore.projects.length);
-
-        const root = document.getElementById('appRoot');
-        root.classList.remove('tree-theme-modern', 'tree-theme-emerald', 'tree-theme-classic');
-        root.classList.add(`tree-theme-${state.theme || 'modern'}`);
-        document.getElementById('themeSelect').value = state.theme || 'modern';
-
         updateQuickBar();
 
         if (state.members.length === 0) return;
-
         const { positions, couplesList, isHorizontal } = computeTreeLayout();
         const q = searchQuery.trim().toLowerCase();
 
-        // Draw marriage connectors (💍) and parent-to-child branches
         couplesList.forEach(unit => {
           const pPos = positions.get(unit.primaryId);
           const spPos = unit.partnerId ? positions.get(unit.partnerId) : null;
           if (!pPos) return;
 
           if (spPos) {
-            const isCoupleSelected = selectedId === unit.primaryId || selectedId === unit.partnerId;
-            const marriageLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            if (!isHorizontal) {
-              marriageLine.setAttribute('x1', pPos.x + pPos.w);
-              marriageLine.setAttribute('y1', unit.unionY);
-              marriageLine.setAttribute('x2', spPos.x);
-              marriageLine.setAttribute('y2', unit.unionY);
-            } else {
-              marriageLine.setAttribute('x1', unit.unionX);
-              marriageLine.setAttribute('y1', pPos.y + pPos.h);
-              marriageLine.setAttribute('x2', unit.unionX);
-              marriageLine.setAttribute('y2', spPos.y);
-            }
-            marriageLine.setAttribute('stroke', isCoupleSelected ? '#db2777' : '#f43f5e');
-            marriageLine.setAttribute('stroke-width', '3');
-            marriageLine.setAttribute('stroke-dasharray', '4 2');
-            linksLayer.appendChild(marriageLine);
-
-            const ringGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            ringGroup.setAttribute('transform', `translate(${unit.unionX}, ${unit.unionY})`);
-
-            const ringCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            ringCircle.setAttribute('r', '13');
-            ringCircle.setAttribute('fill', '#fff1f2');
-            ringCircle.setAttribute('stroke', '#f43f5e');
-            ringCircle.setAttribute('stroke-width', '2');
-            ringGroup.appendChild(ringCircle);
-
-            const ringTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            ringTxt.setAttribute('x', '0');
-            ringTxt.setAttribute('y', '4.5');
-            ringTxt.setAttribute('text-anchor', 'middle');
-            ringTxt.setAttribute('font-size', '11');
-            ringTxt.textContent = '💍';
-            ringGroup.appendChild(ringTxt);
-
-            linksLayer.appendChild(ringGroup);
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', pPos.x + pPos.w);
+            line.setAttribute('y1', unit.unionY);
+            line.setAttribute('x2', spPos.x);
+            line.setAttribute('y2', unit.unionY);
+            line.setAttribute('stroke', '#f43f5e');
+            line.setAttribute('stroke-width', '3');
+            line.setAttribute('stroke-dasharray', '4 2');
+            linksLayer.appendChild(line);
           }
 
-          if (unit.kids && unit.kids.length > 0) {
+          if (unit.kids) {
             unit.kids.forEach(childId => {
               const cPos = positions.get(childId);
               if (!cPos) return;
-
-              const isHighlighted =
-                selectedId === childId ||
-                selectedId === unit.primaryId ||
-                selectedId === unit.partnerId;
-
-              let d = '';
-              if (!isHorizontal) {
-                const startX = unit.unionX;
-                const startY = spPos ? unit.unionY + 13 : pPos.y + pPos.h;
-                const dropY = pPos.y + pPos.h + 28;
-                const endX = cPos.x + cPos.w / 2;
-                const endY = cPos.y;
-                const midY = (dropY + endY) / 2;
-                d = `M ${startX} ${startY} L ${startX} ${dropY} C ${startX} ${midY}, ${endX} ${midY}, ${endX} ${endY}`;
-              } else {
-                const startX = spPos ? unit.unionX + 13 : pPos.x + pPos.w;
-                const startY = unit.unionY;
-                const dropX = pPos.x + pPos.w + 28;
-                const endX = cPos.x;
-                const endY = cPos.y + cPos.h / 2;
-                const midX = (dropX + endX) / 2;
-                d = `M ${startX} ${startY} L ${dropX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`;
-              }
-
+              const startX = unit.unionX, startY = spPos ? unit.unionY + 13 : pPos.y + pPos.h;
+              const dropY = pPos.y + pPos.h + 28, endX = cPos.x + cPos.w / 2, endY = cPos.y;
               const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-              path.setAttribute('d', d);
+              path.setAttribute('d', `M ${startX} ${startY} L ${startX} ${dropY} C ${startX} ${(dropY+endY)/2}, ${endX} ${(dropY+endY)/2}, ${endX} ${endY}`);
               path.setAttribute('fill', 'none');
-              path.setAttribute('stroke', isHighlighted ? '#059669' : '#94a3b8');
-              path.setAttribute('stroke-width', isHighlighted ? '2.8' : '2');
-              path.setAttribute('stroke-linecap', 'round');
+              path.setAttribute('stroke', '#94a3b8');
+              path.setAttribute('stroke-width', '2');
               linksLayer.appendChild(path);
             });
           }
         });
 
-        // Draw Member Nodes
         state.members.forEach(m => {
           const pos = positions.get(m.id);
           if (!pos) return;
-
           const isSelected = m.id === selectedId;
-          const spouseMember = m.spouseId ? state.members.find(s => s.id === m.spouseId) : null;
-          const isSpouseSelected = spouseMember && spouseMember.id === selectedId;
-
-          const isMatched = q && (
-            (m.name || '').toLowerCase().includes(q) ||
-            (m.role || '').toLowerCase().includes(q) ||
-            (m.birthPlace || '').toLowerCase().includes(q) ||
-            (m.occupation || '').toLowerCase().includes(q)
-          );
-
           const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
           g.setAttribute('transform', `translate(${pos.x}, ${pos.y})`);
           g.setAttribute('class', 'node-card');
-          g.dataset.memberId = m.id;
 
           const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
           rect.setAttribute('class', 'card-bg');
           rect.setAttribute('width', pos.w);
           rect.setAttribute('height', pos.h);
           rect.setAttribute('rx', '16');
-          rect.setAttribute('fill', isMatched ? '#ecfdf5' : '#ffffff');
-          rect.setAttribute('stroke', isSelected ? '#059669' : (isSpouseSelected ? '#f43f5e' : (isMatched ? '#10b981' : '#cbd5e1')));
-          rect.setAttribute('stroke-width', isSelected ? '3' : (isSpouseSelected || isMatched ? '2.5' : '1.5'));
+          rect.setAttribute('fill', '#ffffff');
+          rect.setAttribute('stroke', isSelected ? '#059669' : '#cbd5e1');
+          rect.setAttribute('stroke-width', isSelected ? '3' : '1.5');
           rect.setAttribute('filter', 'url(#cardShadow)');
           g.appendChild(rect);
 
           const topBar = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-          const accentColor = getCardAccentColor(m);
           topBar.setAttribute('d', `M 14 0 H ${pos.w - 14} A 14 14 0 0 1 ${pos.w} 14 V 6 H 0 V 14 A 14 14 0 0 1 14 0 Z`);
-          topBar.setAttribute('fill', accentColor);
+          topBar.setAttribute('fill', getCardAccentColor(m));
           g.appendChild(topBar);
 
-          const genBadgeBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-          genBadgeBg.setAttribute('x', pos.w - 60);
-          genBadgeBg.setAttribute('y', '11');
-          genBadgeBg.setAttribute('width', '50');
-          genBadgeBg.setAttribute('height', '17');
-          genBadgeBg.setAttribute('rx', '8.5');
-          genBadgeBg.setAttribute('fill', '#f1f5f9');
-          g.appendChild(genBadgeBg);
+          const avatarCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          avatarCircle.setAttribute('cx', '32');
+          avatarCircle.setAttribute('cy', '46');
+          avatarCircle.setAttribute('r', '19');
+          avatarCircle.setAttribute('fill', getCardAccentColor(m));
+          g.appendChild(avatarCircle);
 
-          const genBadgeTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-          genBadgeTxt.setAttribute('x', pos.w - 35);
-          genBadgeTxt.setAttribute('y', '22.5');
-          genBadgeTxt.setAttribute('text-anchor', 'middle');
-          genBadgeTxt.setAttribute('fill', '#475569');
-          genBadgeTxt.setAttribute('font-size', '9.5');
-          genBadgeTxt.setAttribute('font-weight', '600');
-          genBadgeTxt.textContent = `${m.generation}-avlod`;
-          g.appendChild(genBadgeTxt);
-
-          const avatarCx = 32;
-          const avatarCy = 46;
-          const avatarR = 19;
-
-          if (m.photo && m.photo.startsWith('data:image')) {
-            const clipId = `clip_${m.id}`;
-            const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-            clipPath.setAttribute('id', clipId);
-            const clipCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            clipCircle.setAttribute('cx', avatarCx);
-            clipCircle.setAttribute('cy', avatarCy);
-            clipCircle.setAttribute('r', avatarR);
-            clipPath.appendChild(clipCircle);
-            g.appendChild(clipPath);
-
-            const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-            img.setAttribute('x', avatarCx - avatarR);
-            img.setAttribute('y', avatarCy - avatarR);
-            img.setAttribute('width', avatarR * 2);
-            img.setAttribute('height', avatarR * 2);
-            img.setAttribute('preserveAspectRatio', 'xMidYMid slice');
-            img.setAttribute('clip-path', `url(#${clipId})`);
-            img.setAttribute('href', m.photo);
-            g.appendChild(img);
-          } else {
-            const avatarCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            avatarCircle.setAttribute('cx', avatarCx);
-            avatarCircle.setAttribute('cy', avatarCy);
-            avatarCircle.setAttribute('r', avatarR);
-            avatarCircle.setAttribute('fill', accentColor);
-            g.appendChild(avatarCircle);
-
-            const initialsTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            initialsTxt.setAttribute('x', avatarCx);
-            initialsTxt.setAttribute('y', avatarCy + 4.5);
-            initialsTxt.setAttribute('text-anchor', 'middle');
-            initialsTxt.setAttribute('fill', '#ffffff');
-            initialsTxt.setAttribute('font-size', '12.5');
-            initialsTxt.setAttribute('font-weight', '700');
-            initialsTxt.textContent = getInitials(m.name);
-            g.appendChild(initialsTxt);
-          }
+          const initialsTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          initialsTxt.setAttribute('x', '32');
+          initialsTxt.setAttribute('y', '50.5');
+          initialsTxt.setAttribute('text-anchor', 'middle');
+          initialsTxt.setAttribute('fill', '#ffffff');
+          initialsTxt.setAttribute('font-size', '12.5');
+          initialsTxt.setAttribute('font-weight', '700');
+          initialsTxt.textContent = getInitials(m.name);
+          g.appendChild(initialsTxt);
 
           const nameTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
           nameTxt.setAttribute('x', '58');
@@ -1716,93 +671,19 @@
           nameTxt.setAttribute('fill', '#0f172a');
           nameTxt.setAttribute('font-size', '12.5');
           nameTxt.setAttribute('font-weight', '700');
-          const displayName = (m.name || 'Ismsiz').length > 17
-            ? (m.name || 'Ismsiz').slice(0, 16) + '…'
-            : (m.name || 'Ismsiz');
-          nameTxt.textContent = displayName;
+          nameTxt.textContent = (m.name || 'Ismsiz').length > 17 ? m.name.slice(0, 16) + '…' : m.name;
           g.appendChild(nameTxt);
 
           const roleTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
           roleTxt.setAttribute('x', '58');
           roleTxt.setAttribute('y', '58');
-          roleTxt.setAttribute('fill', accentColor);
+          roleTxt.setAttribute('fill', getCardAccentColor(m));
           roleTxt.setAttribute('font-size', '10.5');
           roleTxt.setAttribute('font-weight', '600');
-          const roleStr = m.role || (m.gender === 'female' ? 'Ayol' : 'Erkak');
-          roleTxt.textContent = roleStr.length > 21 ? roleStr.slice(0, 20) + '…' : roleStr;
+          roleTxt.textContent = m.role || 'Oila a\'zosi';
           g.appendChild(roleTxt);
 
-          const metaTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-          metaTxt.setAttribute('x', '14');
-          metaTxt.setAttribute('y', '81');
-          metaTxt.setAttribute('fill', '#64748b');
-          metaTxt.setAttribute('font-size', '10.5');
-          const yearsStr = m.birthYear
-            ? `${m.birthYear}${m.deathYear ? '–' + m.deathYear : ' y.'}`
-            : '';
-          const placeStr = m.birthPlace ? (yearsStr ? ` • ${m.birthPlace}` : m.birthPlace) : '';
-          const occStr = m.occupation ? ` • ${m.occupation}` : '';
-          const metaCombined = (yearsStr + placeStr + occStr) || 'Tahrirlash uchun bosing';
-          metaTxt.textContent = metaCombined.length > 29 ? metaCombined.slice(0, 28) + '…' : metaCombined;
-          g.appendChild(metaTxt);
-
-          // Bottom Action Bar inside Card: Quick Buttons (+Ota, +Ona, +💍, +O'g'il, +Qiz)
-          const divider = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-          divider.setAttribute('x1', '10');
-          divider.setAttribute('y1', '92');
-          divider.setAttribute('x2', pos.w - 10);
-          divider.setAttribute('y2', '92');
-          divider.setAttribute('stroke', '#f1f5f9');
-          divider.setAttribute('stroke-width', '1');
-          g.appendChild(divider);
-
-          const quickButtons = [
-            { key: 'father', label: '+Ota', x: 10, w: 36, bg: '#f0f9ff', border: '#7dd3fc', color: '#0369a1' },
-            { key: 'mother', label: '+Ona', x: 50, w: 36, bg: '#fdf2f8', border: '#f9a8d4', color: '#be185d' },
-            { key: 'spouse', label: '+💍', x: 90, w: 34, bg: '#fff1f2', border: '#fda4af', color: '#e11d48' },
-            { key: 'son', label: '+O\'g\'il', x: 128, w: 42, bg: '#ecfdf5', border: '#6ee7b7', color: '#047857' },
-            { key: 'daughter', label: '+Qiz', x: 174, w: 36, bg: '#faf5ff', border: '#d8b4fe', color: '#7e22ce' }
-          ];
-
-          quickButtons.forEach(qb => {
-            const btnG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            btnG.setAttribute('transform', `translate(${qb.x}, 98)`);
-            btnG.dataset.cardAction = qb.key;
-
-            const bRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            bRect.setAttribute('width', qb.w);
-            bRect.setAttribute('height', '20');
-            bRect.setAttribute('rx', '5');
-            bRect.setAttribute('fill', qb.bg);
-            bRect.setAttribute('stroke', qb.border);
-            bRect.setAttribute('stroke-width', '1');
-            btnG.appendChild(bRect);
-
-            const bTxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            bTxt.setAttribute('x', qb.w / 2);
-            bTxt.setAttribute('y', '13.5');
-            bTxt.setAttribute('text-anchor', 'middle');
-            bTxt.setAttribute('fill', qb.color);
-            bTxt.setAttribute('font-size', '9');
-            bTxt.setAttribute('font-weight', '700');
-            bTxt.textContent = qb.label;
-            btnG.appendChild(bTxt);
-
-            g.appendChild(btnG);
-          });
-
-          g.addEventListener('click', (e) => {
-            const actionEl = e.target.closest('[data-card-action]');
-            if (actionEl) {
-              e.stopPropagation();
-              const actionType = actionEl.dataset.cardAction;
-              selectMember(m.id);
-              openAddRelativeModal(m.id, actionType);
-              return;
-            }
-            selectMember(m.id);
-          });
-
+          g.addEventListener('click', () => { selectMember(m.id); });
           nodesLayer.appendChild(g);
         });
 
@@ -1816,765 +697,78 @@
       }
 
       function fitTreeToViewport() {
-        if (state.members.length === 0) return;
-        const { positions } = computeTreeLayout();
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        positions.forEach(pos => {
-          if (pos.x < minX) minX = pos.x;
-          if (pos.y < minY) minY = pos.y;
-          if (pos.x + pos.w > maxX) maxX = pos.x + pos.w;
-          if (pos.y + pos.h > maxY) maxY = pos.y + pos.h;
-        });
-
-        const viewport = document.getElementById('canvasViewport');
-        const vw = viewport.clientWidth || 800;
-        const vh = viewport.clientHeight || 600;
-        const treeW = Math.max(maxX - minX, 240);
-        const treeH = Math.max(maxY - minY, 150);
-
-        const pad = 80;
-        const scaleX = (vw - pad * 2) / treeW;
-        const scaleY = (vh - pad * 2) / treeH;
-        zoom = Math.min(Math.max(Math.min(scaleX, scaleY), 0.38), 1.1);
-
-        panX = (vw - treeW * zoom) / 2 - minX * zoom;
-        panY = Math.max((vh - treeH * zoom) / 2 - minY * zoom, 54);
+        zoom = 1; panX = 40; panY = 40;
         updateTransform();
       }
 
       function centerOnMember(memberId) {
-        const { positions } = computeTreeLayout();
-        const pos = positions.get(memberId);
-        if (!pos) return;
-        const viewport = document.getElementById('canvasViewport');
-        const vw = viewport.clientWidth || 800;
-        const vh = viewport.clientHeight || 600;
-        panX = vw / 2 - (pos.x + pos.w / 2) * zoom;
-        panY = vh / 2 - (pos.y + pos.h / 2) * zoom;
-        updateTransform();
+        selectMember(memberId);
       }
 
       function selectMember(id) {
         selectedId = id;
         renderTree();
         renderSidebar();
-        if (window.innerWidth < 640) {
-          document.getElementById('inspectorSidebar').classList.remove('translate-x-full');
-        }
       }
 
-      // Render Right Inspector & Full Editor Panel
       function renderSidebar() {
         const container = document.getElementById('sidebarContent');
         const member = state.members.find(m => m.id === selectedId);
-
-        if (!member) {
-          container.innerHTML = `
-            <div class="text-center py-12 px-4">
-              <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
-              <p class="text-sm font-semibold text-slate-700">Shaxs tanlanmagan</p>
-              <p class="text-xs text-slate-500 mt-1">Daraxtdagi istalgan kartochkani bosing yoki yangi oila a'zosi qo'shing.</p>
-              <button id="emptyAddPersonBtn" class="mt-4 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition">
-                + Birinchi shaxsni qo'shish
-              </button>
-            </div>
-          `;
-          const emptyBtn = document.getElementById('emptyAddPersonBtn');
-          if (emptyBtn) {
-            emptyBtn.addEventListener('click', () => openAddRelativeModal(null, 'root'));
-          }
-          return;
-        }
-
-        const spouseMember = member.spouseId ? state.members.find(s => s.id === member.spouseId) : null;
-        const fatherMember = member.fatherId ? state.members.find(p => p.id === member.fatherId) : null;
-        const motherMember = member.motherId ? state.members.find(p => p.id === member.motherId) : null;
-
-        // Build separate Father, Mother, Spouse, and Parent options so user can edit ANY relationship!
-        const descendants = getDescendantIds(member.id);
-        const eligibleRelatives = state.members.filter(m => m.id !== member.id && !descendants.has(m.id));
-
-        const fatherOptions = eligibleRelatives
-          .filter(m => m.id !== member.spouseId && m.id !== member.motherId)
-          .map(m => `<option value="${m.id}" ${member.fatherId === m.id ? 'selected' : ''}>${escapeHtml(m.name)} (${m.generation}-avlod)</option>`)
-          .join('');
-
-        const motherOptions = eligibleRelatives
-          .filter(m => m.id !== member.spouseId && m.id !== member.fatherId)
-          .map(m => `<option value="${m.id}" ${member.motherId === m.id ? 'selected' : ''}>${escapeHtml(m.name)} (${m.generation}-avlod)</option>`)
-          .join('');
-
-        const spouseOptions = state.members
-          .filter(m => m.id !== member.id && m.id !== member.fatherId && m.id !== member.motherId && !descendants.has(m.id))
-          .map(m => `<option value="${m.id}" ${member.spouseId === m.id ? 'selected' : ''}>${escapeHtml(m.name)} (${m.generation}-avlod)</option>`)
-          .join('');
-
-        const parentOptions = eligibleRelatives
-          .map(m => `<option value="${m.id}" ${member.parentId === m.id ? 'selected' : ''}>${escapeHtml(m.name)}</option>`)
-          .join('');
-
-        // Children belong to this member or their spouse
-        const children = state.members.filter(m =>
-          m.fatherId === member.id ||
-          m.motherId === member.id ||
-          m.parentId === member.id ||
-          (spouseMember && (m.fatherId === spouseMember.id || m.motherId === spouseMember.id || m.parentId === spouseMember.id))
-        );
-        const sons = children.filter(c => c.gender === 'male');
-        const daughters = children.filter(c => c.gender === 'female');
+        if (!member) { container.innerHTML = '<p class="text-xs text-slate-500">Shaxs tanlanmagan</p>'; return; }
 
         container.innerHTML = `
-          <!-- Profile Top Card -->
-          <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center gap-3">
-            <div class="relative shrink-0">
-              ${member.photo && member.photo.startsWith('data:image')
-                ? `<img src="${member.photo}" alt="${escapeHtml(member.name)}" class="w-14 h-14 rounded-full object-cover border-2 border-emerald-500" />`
-                : `<div id="sidebarAvatarCircle" class="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg" style="background:${getCardAccentColor(member)}">${getInitials(member.name)}</div>`
-              }
-              <label title="Rasm yuklash" class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white border border-slate-300 shadow-xs flex items-center justify-center cursor-pointer hover:bg-slate-100">
-                <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                  <circle cx="12" cy="13" r="3" />
-                </svg>
-                <input type="file" id="memberPhotoInput" accept="image/*" class="hidden" />
-              </label>
-            </div>
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-1.5">
-                <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">${member.generation}-avlod</span>
-                <span id="sidebarGenderBadge" class="text-[11px] font-semibold px-2 py-0.5 rounded-md ${member.gender === 'female' ? 'bg-pink-100 text-pink-800' : 'bg-sky-100 text-sky-800'}">${member.gender === 'female' ? 'Ayol' : 'Erkak'}</span>
-                ${member.photo ? `<button id="removePhotoBtn" type="button" class="text-[11px] text-rose-600 hover:underline">Rasmni o'chirish</button>` : ''}
-              </div>
-              <h3 id="sidebarMemberNameHeading" class="font-bold text-slate-900 text-sm truncate mt-0.5">${escapeHtml(member.name)}</h3>
-              <p id="sidebarMemberRoleSub" class="text-xs text-slate-500 truncate">${escapeHtml(member.role || 'Oila a\'zosi')}</p>
-            </div>
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+            <h3 class="font-bold text-slate-900 text-sm">${escapeHtml(member.name)}</h3>
+            <p class="text-xs text-slate-500">${escapeHtml(member.role || '')}</p>
           </div>
-
-          <!-- 5 Explicit Family Relation Buttons (Works identically for Erkak and Ayol!) -->
-          <div class="p-3 rounded-2xl bg-slate-50/90 border border-slate-200 space-y-2.5">
-            <div class="flex items-center justify-between">
-              <p class="text-[11px] font-bold uppercase tracking-wider text-slate-600">
-                ${member.gender === 'female' ? '👩 Ayol' : '👨 Erkak'} yaqinlarini qo'shish
-              </p>
-              <button type="button" id="btnCenterNode" class="text-[11px] font-semibold text-emerald-700 hover:underline">🎯 Markazlash</button>
-            </div>
-
-            <!-- 1 & 2: Otasi and Onasi -->
-            <div class="grid grid-cols-2 gap-2">
-              <button type="button" id="btnAddFather" class="px-2.5 py-2 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-900 text-xs font-semibold flex flex-col items-start transition">
-                <span class="text-[10px] uppercase text-sky-600 font-bold">1. Otasi</span>
-                <span class="truncate w-full text-left mt-0.5">${fatherMember ? '✓ ' + escapeHtml(fatherMember.name) : '+ Otasini qo\'shish'}</span>
-              </button>
-              <button type="button" id="btnAddMother" class="px-2.5 py-2 rounded-xl bg-pink-50 hover:bg-pink-100 border border-pink-200 text-pink-900 text-xs font-semibold flex flex-col items-start transition">
-                <span class="text-[10px] uppercase text-pink-600 font-bold">2. Onasi</span>
-                <span class="truncate w-full text-left mt-0.5">${motherMember ? '✓ ' + escapeHtml(motherMember.name) : '+ Onasini qo\'shish'}</span>
-              </button>
-            </div>
-
-            <!-- 3: Turmush o'rtog'i -->
-            <div class="flex items-center gap-1.5">
-              <button type="button" id="btnAddSpouse" class="flex-1 px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-900 text-xs font-semibold flex items-center justify-between transition">
-                <span>💍 3. Turmush o'rtog'i:</span>
-                <span id="selectSpouseCardBtn" class="font-bold truncate ml-1">${spouseMember ? '✓ ' + escapeHtml(spouseMember.name) : '+ Qo\'shish'}</span>
-              </button>
-              ${spouseMember ? `
-                <button type="button" id="unlinkSpouseBtn" title="Nikohni uzish" class="px-2.5 py-2 rounded-xl bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 text-xs font-semibold shrink-0 transition">
-                  Ajratish
-                </button>
-              ` : ''}
-              ${(fatherMember && !motherMember) || (!fatherMember && motherMember) ? `
-                <button type="button" id="addMissingSecondParentBtn" class="hidden">+ Juftini qo'shish</button>
-              ` : ''}
-            </div>
-
-            <!-- 4 & 5: O'g'li and Qizi -->
-            <div class="grid grid-cols-2 gap-2">
-              <button type="button" id="btnAddSon" class="px-2.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-semibold flex items-center justify-center gap-1 transition">
-                <span>👦 + O'g'il qo'shish</span>
-              </button>
-              <button type="button" id="btnAddDaughter" class="px-2.5 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-900 text-xs font-semibold flex items-center justify-center gap-1 transition">
-                <span>👧 + Qiz qo'shish</span>
-              </button>
-            </div>
-
-            <!-- Additional helper actions -->
-            <div class="grid grid-cols-3 gap-1.5 pt-1 border-t border-slate-200/80">
-              <button type="button" id="btnAddParent" class="px-2 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-[11px] font-semibold truncate transition">
-                + Ota va Ona
-              </button>
-              <button type="button" id="btnAddChild" class="px-2 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold truncate transition">
-                + Farzand
-              </button>
-              <button type="button" id="btnAddSibling" class="px-2 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold truncate transition">
-                + Aka / Singil
-              </button>
-            </div>
-          </div>
-
-          <!-- Complete Editable Form for All Fields & Relationships -->
-          <form id="editMemberForm" class="space-y-3 pt-2 border-t border-slate-200">
-            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Barcha ma'lumotlarni tahrirlash</p>
-
+          <form id="editMemberForm" class="space-y-3 pt-2">
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1" for="editName">Ism va familiya</label>
-              <input id="editName" type="text" value="${escapeHtml(member.name)}" class="w-full px-3 py-1.5 text-xs sm:text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Ism va familiya</label>
+              <input id="editName" type="text" value="${escapeHtml(member.name)}" class="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg" />
             </div>
-
-            <div class="grid grid-cols-2 gap-2.5">
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1" for="editGender">Jinsi</label>
-                <select id="editGender" class="w-full px-2.5 py-1.5 text-xs sm:text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                  <option value="male" ${member.gender === 'male' ? 'selected' : ''}>Erkak</option>
-                  <option value="female" ${member.gender === 'female' ? 'selected' : ''}>Ayol</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1" for="editRole">Oila maqomi / Unvoni</label>
-                <input id="editRole" type="text" value="${escapeHtml(member.role)}" placeholder="Otasi, Onasi, O'g'li, Qizi..." class="w-full px-2.5 py-1.5 text-xs sm:text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-              </div>
-            </div>
-
-            <!-- Separate Editable Father, Mother, and Spouse Selectors -->
-            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
-              <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Oila bog'lanishlarini o'zgartirish</p>
-              <div>
-                <label class="block text-[11px] font-semibold text-sky-800 mb-0.5" for="editFatherId">👨 Otasi:</label>
-                <select id="editFatherId" class="w-full px-2 py-1 text-xs border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
-                  <option value="">— Otasi tanlanmagan —</option>
-                  ${fatherOptions}
-                </select>
-              </div>
-              <div>
-                <label class="block text-[11px] font-semibold text-pink-800 mb-0.5" for="editMotherId">👩 Onasi:</label>
-                <select id="editMotherId" class="w-full px-2 py-1 text-xs border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-pink-500">
-                  <option value="">— Onasi tanlanmagan —</option>
-                  ${motherOptions}
-                </select>
-              </div>
-              <div>
-                <label class="block text-[11px] font-semibold text-rose-800 mb-0.5" for="editSpouseId">💍 Turmush o'rtog'i:</label>
-                <select id="editSpouseId" class="w-full px-2 py-1 text-xs border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-rose-500">
-                  <option value="">— Turmush o'rtog'i yo'q —</option>
-                  ${spouseOptions}
-                </select>
-              </div>
-            </div>
-
-            <div class="hidden">
-              <label for="editParentId">Ota-onasi</label>
-              <select id="editParentId"><option value="">—</option>${parentOptions}</select>
-              <label for="editSpouse">Turmush o'rtog'i</label>
-              <input id="editSpouse" type="text" value="${escapeHtml(spouseMember ? spouseMember.name : (member.spouseName || ''))}" />
-            </div>
-
-            <div class="grid grid-cols-2 gap-2.5">
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1" for="editBirthYear">Tug'ilgan yili / sanasi</label>
-                <input id="editBirthYear" type="text" value="${escapeHtml(member.birthYear)}" placeholder="1970" class="w-full px-2.5 py-1.5 text-xs sm:text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1" for="editDeathYear">Vafot yili (ixtiyoriy)</label>
-                <input id="editDeathYear" type="text" value="${escapeHtml(member.deathYear)}" placeholder="Hayot bo'lsa bo'sh" class="w-full px-2.5 py-1.5 text-xs sm:text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2.5">
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1" for="editBirthPlace">Tug'ilgan joyi / Manzil</label>
-                <input id="editBirthPlace" type="text" value="${escapeHtml(member.birthPlace)}" placeholder="Toshkent" class="w-full px-2.5 py-1.5 text-xs sm:text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1" for="editOccupation">Kasbi / Sohasi</label>
-                <input id="editOccupation" type="text" value="${escapeHtml(member.occupation)}" placeholder="Muhandis, Ustoz..." class="w-full px-2.5 py-1.5 text-xs sm:text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-              </div>
-            </div>
-
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1" for="editCardColor">Kartochka rangi</label>
-              <select id="editCardColor" class="w-full px-2.5 py-1.5 text-xs sm:text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                <option value="auto" ${(!member.cardColor || member.cardColor === 'auto') ? 'selected' : ''}>Avtomatik (Jins bo'yicha)</option>
-                <option value="sky" ${member.cardColor === 'sky' ? 'selected' : ''}>Moviy ko'k</option>
-                <option value="pink" ${member.cardColor === 'pink' ? 'selected' : ''}>Pushti / Qizg'ish</option>
-                <option value="emerald" ${member.cardColor === 'emerald' ? 'selected' : ''}>Zumrad yashil</option>
-                <option value="amber" ${member.cardColor === 'amber' ? 'selected' : ''}>Oltin sariq</option>
-                <option value="purple" ${member.cardColor === 'purple' ? 'selected' : ''}>Binafsha</option>
-                <option value="slate" ${member.cardColor === 'slate' ? 'selected' : ''}>Klassik kulrang</option>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Jinsi</label>
+              <select id="editGender" class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg bg-white">
+                <option value="male" ${member.gender === 'male' ? 'selected' : ''}>Erkak</option>
+                <option value="female" ${member.gender === 'female' ? 'selected' : ''}>Ayol</option>
               </select>
             </div>
-
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1" for="editBio">Hayot yo'li va xotiralar</label>
-              <textarea id="editBio" rows="2" placeholder="Qisqacha tarjimai hol..." class="w-full px-3 py-1.5 text-xs sm:text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">${escapeHtml(member.bio || '')}</textarea>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Tug'ilgan yili</label>
+              <input id="editBirthYear" type="text" value="${escapeHtml(member.birthYear)}" class="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg" />
             </div>
-
-            <div class="flex items-center justify-between gap-2 pt-2">
-              <button type="submit" class="flex-1 py-2 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-sm transition">
-                💾 O'zgarishlarni saqlash
-              </button>
-              <button type="button" id="deleteMemberBtn" class="py-2 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-semibold text-xs transition">
-                O'chirish
-              </button>
-            </div>
+            <button type="submit" class="w-full py-2 px-4 rounded-xl bg-emerald-600 text-white font-semibold text-xs shadow-sm">Saqlash</button>
+            <button type="button" id="deleteMemberBtn" class="w-full py-2 px-4 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 font-semibold text-xs">O'chirish</button>
           </form>
-
-          <!-- Direct Children List -->
-          <div class="pt-3 border-t border-slate-200 space-y-2">
-            <div class="flex items-center justify-between">
-              <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                Farzandlari: O'g'il (${sons.length}) • Qiz (${daughters.length})
-              </p>
-            </div>
-            ${children.length === 0
-              ? `<p class="text-xs text-slate-400 italic">Hozircha o'g'il yoki qiz kiritilmagan</p>`
-              : `<div class="space-y-1.5">
-                  ${children.map(ch => `
-                    <button type="button" data-select-child="${ch.id}" class="w-full px-3 py-1.5 rounded-lg bg-slate-50 hover:bg-emerald-50 border border-slate-200 text-left flex items-center justify-between transition">
-                      <span class="text-xs font-semibold text-slate-800 truncate">
-                        ${ch.gender === 'female' ? '👧 Qizi:' : '👦 O\'g\'li:'} ${escapeHtml(ch.name)}
-                      </span>
-                      <span class="text-[11px] text-slate-500">${escapeHtml(ch.birthYear || '')}</span>
-                    </button>
-                  `).join('')}
-                </div>`
-            }
-          </div>
         `;
-
-        // Attach listeners inside sidebar
-        document.getElementById('btnAddFather').addEventListener('click', () => {
-          if (fatherMember) {
-            selectMember(fatherMember.id);
-            centerOnMember(fatherMember.id);
-            showToast(`Otasi: ${fatherMember.name}`);
-          } else {
-            openAddRelativeModal(member.id, 'father');
-          }
-        });
-
-        document.getElementById('btnAddMother').addEventListener('click', () => {
-          if (motherMember) {
-            selectMember(motherMember.id);
-            centerOnMember(motherMember.id);
-            showToast(`Onasi: ${motherMember.name}`);
-          } else {
-            openAddRelativeModal(member.id, 'mother');
-          }
-        });
-
-        document.getElementById('btnAddSpouse').addEventListener('click', () => {
-          if (spouseMember) {
-            selectMember(spouseMember.id);
-            centerOnMember(spouseMember.id);
-            showToast(`Turmush o'rtog'i: ${spouseMember.name}`);
-          } else {
-            openAddRelativeModal(member.id, 'spouse');
-          }
-        });
-
-        document.getElementById('btnAddSon').addEventListener('click', () => openAddRelativeModal(member.id, 'son'));
-        document.getElementById('btnAddDaughter').addEventListener('click', () => openAddRelativeModal(member.id, 'daughter'));
-        document.getElementById('btnAddChild').addEventListener('click', () => openAddRelativeModal(member.id, 'child'));
-        document.getElementById('btnAddSibling').addEventListener('click', () => openAddRelativeModal(member.id, 'sibling'));
-        document.getElementById('btnAddParent').addEventListener('click', () => openAddRelativeModal(member.id, 'parent'));
-        document.getElementById('btnCenterNode').addEventListener('click', () => centerOnMember(member.id));
-
-        const addMissingSecondParentBtn = document.getElementById('addMissingSecondParentBtn');
-        if (addMissingSecondParentBtn) {
-          addMissingSecondParentBtn.addEventListener('click', () => {
-            openAddRelativeModal(member.id, fatherMember ? 'mother' : 'father');
-          });
-        }
-
-        const unlinkSpouseBtn = document.getElementById('unlinkSpouseBtn');
-        if (unlinkSpouseBtn && spouseMember) {
-          unlinkSpouseBtn.addEventListener('click', () => {
-            spouseMember.spouseId = null;
-            spouseMember.spouseName = '';
-            member.spouseId = null;
-            member.spouseName = '';
-            saveState();
-            renderAll();
-            showToast('Nikoh bog\'ichi uzildi');
-          });
-        }
-
-        const photoInput = document.getElementById('memberPhotoInput');
-        photoInput.addEventListener('change', (e) => {
-          const file = e.target.files && e.target.files[0];
-          if (!file) return;
-          const reader = new FileReader();
-          reader.onload = () => {
-            member.photo = reader.result;
-            saveState();
-            renderAll();
-            showToast('Rasm muvaffaqiyatli yuklandi va saqlandi!');
-          };
-          reader.readAsDataURL(file);
-        });
-
-        const removePhotoBtn = document.getElementById('removePhotoBtn');
-        if (removePhotoBtn) {
-          removePhotoBtn.addEventListener('click', () => {
-            member.photo = '';
-            saveState();
-            renderAll();
-            showToast('Rasm olib tashlandi');
-          });
-        }
-
-        // Apply form edits function (used for both live auto-save and form submit)
-        function applyMemberFormEdits(reRenderSidebarToo) {
-          member.name = document.getElementById('editName').value.trim() || 'Ismsiz';
-          member.gender = document.getElementById('editGender').value;
-          member.role = document.getElementById('editRole').value.trim();
-          member.birthYear = document.getElementById('editBirthYear').value.trim();
-          member.deathYear = document.getElementById('editDeathYear').value.trim();
-          member.birthPlace = document.getElementById('editBirthPlace').value.trim();
-          member.occupation = document.getElementById('editOccupation').value.trim();
-          member.cardColor = document.getElementById('editCardColor').value;
-          member.bio = document.getElementById('editBio').value.trim();
-
-          // Update Father, Mother, and Spouse links
-          const newFatherId = document.getElementById('editFatherId').value || null;
-          const newMotherId = document.getElementById('editMotherId').value || null;
-          const newSpouseId = document.getElementById('editSpouseId').value || null;
-
-          member.fatherId = newFatherId;
-          member.motherId = newMotherId;
-          member.parentId = newFatherId || newMotherId || null;
-
-          // Handle spouse change cleanly
-          if (newSpouseId !== member.spouseId) {
-            if (member.spouseId) {
-              const oldSp = state.members.find(x => x.id === member.spouseId);
-              if (oldSp) {
-                oldSp.spouseId = null;
-                oldSp.spouseName = '';
-              }
-            }
-            if (newSpouseId) {
-              const nextSp = state.members.find(x => x.id === newSpouseId);
-              if (nextSp) {
-                if (nextSp.spouseId && nextSp.spouseId !== member.id) {
-                  const prevPartner = state.members.find(x => x.id === nextSp.spouseId);
-                  if (prevPartner) {
-                    prevPartner.spouseId = null;
-                    prevPartner.spouseName = '';
-                  }
-                }
-                nextSp.spouseId = member.id;
-                nextSp.spouseName = member.name;
-                member.spouseId = nextSp.id;
-                member.spouseName = nextSp.name;
-              }
-            } else {
-              member.spouseId = null;
-              member.spouseName = '';
-            }
-          }
-
-          // Update sidebar header preview text without losing input focus
-          const hEl = document.getElementById('sidebarMemberNameHeading');
-          if (hEl) hEl.textContent = member.name;
-          const rEl = document.getElementById('sidebarMemberRoleSub');
-          if (rEl) rEl.textContent = member.role || 'Oila a\'zosi';
-          const avEl = document.getElementById('sidebarAvatarCircle');
-          if (avEl) {
-            avEl.textContent = getInitials(member.name);
-            avEl.style.background = getCardAccentColor(member);
-          }
-
-          saveState();
-          renderTree();
-          renderListView();
-          if (reRenderSidebarToo) {
-            renderSidebar();
-          }
-        }
-
-        // Live auto-save on text inputs
-        ['editName', 'editRole', 'editBirthYear', 'editDeathYear', 'editBirthPlace', 'editOccupation', 'editBio'].forEach(inputId => {
-          const el = document.getElementById(inputId);
-          if (el) {
-            el.addEventListener('input', () => applyMemberFormEdits(false));
-          }
-        });
-
-        // Live auto-save on dropdown selects (re-renders sidebar to reflect new relation links)
-        ['editGender', 'editFatherId', 'editMotherId', 'editSpouseId', 'editCardColor'].forEach(selectId => {
-          const el = document.getElementById(selectId);
-          if (el) {
-            el.addEventListener('change', () => applyMemberFormEdits(true));
-          }
-        });
 
         document.getElementById('editMemberForm').addEventListener('submit', (e) => {
           e.preventDefault();
-          applyMemberFormEdits(true);
-          showToast('Barcha o\'zgarishlar saqlandi!');
+          member.name = document.getElementById('editName').value.trim() || 'Ismsiz';
+          member.gender = document.getElementById('editGender').value;
+          member.birthYear = document.getElementById('editBirthYear').value.trim();
+          saveState();
+          renderTree();
+          renderSidebar();
         });
 
         document.getElementById('deleteMemberBtn').addEventListener('click', () => {
-          openConfirmModal(
-            `"${member.name}" shajaradan o'chirilsinmi?`,
-            `Agar ushbu shaxs o'chirilsa, uning farzandlari turmush o'rtog'iga yoki yuqori bo'g'inga bog'lanadi.`,
-            () => {
-              const fallbackParent = member.spouseId || member.parentId || null;
-              state.members.forEach(m => {
-                if (m.parentId === member.id) m.parentId = fallbackParent;
-                if (m.fatherId === member.id) m.fatherId = null;
-                if (m.motherId === member.id) m.motherId = null;
-                if (m.spouseId === member.id) {
-                  m.spouseId = null;
-                  m.spouseName = '';
-                }
-              });
-              state.members = state.members.filter(m => m.id !== member.id);
-              selectedId = state.members.length > 0 ? state.members[0].id : null;
-              saveState();
-              renderAll();
-              showToast('Oila a\'zosi o\'chirildi');
-            }
-          );
-        });
-
-        container.querySelectorAll('[data-select-child]').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const targetId = btn.getAttribute('data-select-child');
-            selectMember(targetId);
-            centerOnMember(targetId);
-          });
+          state.members = state.members.filter(m => m.id !== member.id);
+          selectedId = state.members.length > 0 ? state.members[0].id : null;
+          saveState();
+          renderTree();
+          renderSidebar();
         });
       }
 
-      // Render Saved Projects List inside "Mening Shajaralarim" Modal
-      function renderProjectsModalList() {
-        const listEl = document.getElementById('projectsListContainer');
-        if (!listEl) return;
-
-        listEl.innerHTML = projectsStore.projects.map(proj => {
-          const isCurrent = proj.projectId === state.projectId;
-          const mCount = Array.isArray(proj.members) ? proj.members.length : 0;
-          const cCount = Array.isArray(proj.members) ? Math.floor(proj.members.filter(m => m.spouseId).length / 2) : 0;
-          return `
-            <div class="p-3.5 rounded-2xl border ${isCurrent ? 'border-emerald-500 bg-emerald-50/40' : 'border-slate-200 bg-white hover:border-slate-300'} flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition">
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <span class="font-bold text-sm text-slate-900 truncate">${escapeHtml(proj.title || 'Nomsiz shajara')}</span>
-                  ${isCurrent ? `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-600 text-white">Hozir ochiq</span>` : ''}
-                </div>
-                <p class="text-xs text-slate-500 mt-0.5">
-                  👥 ${mCount} kishi • 💍 ${cCount} juftlik • 🕒 Saqlangan: ${escapeHtml(proj.updatedAt || 'Hozir')}
-                </p>
-              </div>
-              <div class="flex items-center gap-1.5 shrink-0 flex-wrap">
-                ${!isCurrent ? `
-                  <button type="button" data-open-proj="${proj.projectId}" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-2xs transition">
-                    Ochish / Ishlash
-                  </button>
-                ` : `
-                  <span class="px-2.5 py-1.5 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-semibold">Faol</span>
-                `}
-                <button type="button" data-dup-proj="${proj.projectId}" title="Nusxa yaratish" class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition">
-                  Nusxa
-                </button>
-                <button type="button" data-dl-proj="${proj.projectId}" title="Fayl qilib yuklab olish" class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition">
-                  .JSON
-                </button>
-                ${projectsStore.projects.length > 1 ? `
-                  <button type="button" data-del-proj="${proj.projectId}" title="O'chirish" class="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold transition">
-                    O'chirish
-                  </button>
-                ` : ''}
-              </div>
-            </div>
-          `;
-        }).join('');
-
-        listEl.querySelectorAll('[data-open-proj]').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const pid = btn.getAttribute('data-open-proj');
-            switchToProject(pid);
-            document.getElementById('projectsModal').classList.add('hidden');
-            showToast(`"${state.title}" shajarasi ochildi!`);
-          });
-        });
-
-        listEl.querySelectorAll('[data-dup-proj]').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const pid = btn.getAttribute('data-dup-proj');
-            const orig = projectsStore.projects.find(p => p.projectId === pid);
-            if (!orig) return;
-            const copy = JSON.parse(JSON.stringify(orig));
-            copy.projectId = 'proj_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 5);
-            copy.title = (orig.title || 'Shajara') + ' (Nusxa)';
-            copy.updatedAt = getNowFormatted();
-            projectsStore.projects.unshift(copy);
-            saveState();
-            renderProjectsModalList();
-            showToast(`"${copy.title}" nusxasi yaratildi!`);
-          });
-        });
-
-        listEl.querySelectorAll('[data-dl-proj]').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const pid = btn.getAttribute('data-dl-proj');
-            const orig = projectsStore.projects.find(p => p.projectId === pid);
-            if (!orig) return;
-            const blob = new Blob([JSON.stringify(orig, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${(orig.title || 'shajara').toLowerCase().replace(/\s+/g, '_')}.json`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
-            showToast('Shajara fayli yuklab olindi!');
-          });
-        });
-
-        listEl.querySelectorAll('[data-del-proj]').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const pid = btn.getAttribute('data-del-proj');
-            const targetProj = projectsStore.projects.find(p => p.projectId === pid);
-            if (!targetProj || projectsStore.projects.length <= 1) return;
-            openConfirmModal(
-              `"${targetProj.title}" o'chirilsinmi?`,
-              `Ushbu shajara ro'yxatdan o'chiriladi. Boshqa saqlangan shajaralaringizga zarar yetmaydi.`,
-              () => {
-                projectsStore.projects = projectsStore.projects.filter(p => p.projectId !== pid);
-                if (state.projectId === pid) {
-                  state = projectsStore.projects[0];
-                  projectsStore.activeProjectId = state.projectId;
-                  selectedId = state.members.length > 0 ? state.members[0].id : null;
-                }
-                saveState();
-                renderAll();
-                renderProjectsModalList();
-                showToast('Shajara ro\'yxatdan o\'chirildi');
-              }
-            );
-          });
-        });
-      }
-
-      function getDescendantIds(rootId) {
-        const result = new Set();
-        function walk(id) {
-          const mObj = state.members.find(x => x.id === id);
-          const spId = mObj ? mObj.spouseId : null;
-          state.members.forEach(m => {
-            const isChild =
-              m.parentId === id || m.fatherId === id || m.motherId === id ||
-              (spId && (m.parentId === spId || m.fatherId === spId || m.motherId === spId));
-            if (isChild && !result.has(m.id)) {
-              result.add(m.id);
-              if (m.spouseId) result.add(m.spouseId);
-              walk(m.id);
-            }
-          });
-        }
-        walk(rootId);
-        return result;
-      }
-
-      // Render Directory / List View
       function renderListView() {
-        recomputeGenerations();
-        const statsGrid = document.getElementById('statsGrid');
         const wrapper = document.getElementById('generationListWrapper');
-
-        const total = state.members.length;
-        const maxGen = state.members.reduce((acc, m) => Math.max(acc, m.generation || 1), 0);
-        const couplesCount = Math.floor(state.members.filter(m => m.spouseId).length / 2);
-        const males = state.members.filter(m => m.gender === 'male').length;
-        const females = state.members.filter(m => m.gender === 'female').length;
-
-        statsGrid.innerHTML = `
-          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-            <p class="text-xs text-slate-500 font-medium">Jami oila a'zolari</p>
-            <p class="text-2xl font-bold text-slate-900 mt-1">${total} nafar</p>
+        wrapper.innerHTML = state.members.map(m => `
+          <div class="p-3 bg-white rounded-xl border flex justify-between items-center">
+            <div><strong>${escapeHtml(m.name)}</strong> (${escapeHtml(m.role || '')})</div>
+            <button onclick="selectMember('${m.id}')" class="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded">Tanlash</button>
           </div>
-          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-            <p class="text-xs text-slate-500 font-medium">Oilaviy juftliklar (💍)</p>
-            <p class="text-2xl font-bold text-pink-600 mt-1">${couplesCount} juft</p>
-          </div>
-          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-            <p class="text-xs text-slate-500 font-medium">Avlodlar soni</p>
-            <p class="text-2xl font-bold text-emerald-600 mt-1">${maxGen} bo'g'in</p>
-          </div>
-          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-            <p class="text-xs text-slate-500 font-medium">Erkak / Ayollar</p>
-            <p class="text-2xl font-bold text-sky-600 mt-1">${males} / ${females}</p>
-          </div>
-        `;
-
-        const q = searchQuery.trim().toLowerCase();
-        const grouped = new Map();
-        state.members.forEach(m => {
-          if (q && !(
-            (m.name || '').toLowerCase().includes(q) ||
-            (m.role || '').toLowerCase().includes(q) ||
-            (m.birthPlace || '').toLowerCase().includes(q) ||
-            (m.occupation || '').toLowerCase().includes(q)
-          )) {
-            return;
-          }
-          const g = m.generation || 1;
-          if (!grouped.has(g)) grouped.set(g, []);
-          grouped.get(g).push(m);
-        });
-
-        const sortedGens = Array.from(grouped.keys()).sort((a, b) => a - b);
-        if (sortedGens.length === 0) {
-          wrapper.innerHTML = `<div class="bg-white p-8 rounded-2xl border border-slate-200 text-center text-sm text-slate-500">Hech qanday ma'lumot topilmadi.</div>`;
-          return;
-        }
-
-        wrapper.innerHTML = sortedGens.map(gen => {
-          const list = grouped.get(gen);
-          return `
-            <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs">
-              <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-                <h3 class="font-bold text-slate-900 text-sm sm:text-base">${gen}-avlod vakillari</h3>
-                <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700">${list.length} kishi</span>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                ${list.map(m => {
-                  const sp = m.spouseId ? state.members.find(x => x.id === m.spouseId) : null;
-                  return `
-                  <div data-list-member="${m.id}" class="p-3 rounded-xl border ${m.id === selectedId ? 'border-emerald-500 bg-emerald-50/40' : 'border-slate-200 hover:border-emerald-300'} flex items-start gap-3 cursor-pointer transition">
-                    <div class="w-10 h-10 rounded-full shrink-0 flex items-center justify-center text-white font-bold text-xs" style="background:${getCardAccentColor(m)}">
-                      ${getInitials(m.name)}
-                    </div>
-                    <div class="min-w-0 flex-1">
-                      <div class="flex items-center justify-between gap-2">
-                        <h4 class="font-bold text-sm text-slate-900 truncate">${escapeHtml(m.name)}</h4>
-                        <span class="text-[11px] text-slate-500 shrink-0">${escapeHtml(m.birthYear || '')}</span>
-                      </div>
-                      <p class="text-xs text-emerald-700 font-medium">${escapeHtml(m.role || 'Oila a\'zosi')}</p>
-                      ${sp ? `<p class="text-[11px] text-pink-700 font-medium mt-0.5">💍 Turmush o'rtog'i: ${escapeHtml(sp.name)}</p>` : ''}
-                      ${m.bio ? `<p class="text-[11px] text-slate-500 mt-1 line-clamp-2">${escapeHtml(m.bio)}</p>` : ''}
-                    </div>
-                  </div>
-                `;
-                }).join('')}
-              </div>
-            </div>
-          `;
-        }).join('');
-
-        wrapper.querySelectorAll('[data-list-member]').forEach(card => {
-          card.addEventListener('click', () => {
-            const id = card.getAttribute('data-list-member');
-            selectMember(id);
-          });
-        });
+        `).join('');
       }
 
       function renderAll() {
@@ -2583,851 +777,101 @@
         renderListView();
       }
 
-      // Open Modal to Add Father / Mother / Spouse / Son / Daughter / Married Parents / Sibling / Root
       function openAddRelativeModal(targetId, relType) {
-        const modal = document.getElementById('addRelativeModal');
-        const target = state.members.find(m => m.id === targetId);
-
-        if (relType === 'father' && target && target.fatherId) {
-          const existingF = state.members.find(x => x.id === target.fatherId);
-          if (existingF) {
-            selectMember(existingF.id);
-            centerOnMember(existingF.id);
-            showToast(`${target.name}ning otasi (${existingF.name}) tanlandi`);
-            return;
-          }
-        }
-
-        if (relType === 'mother' && target && target.motherId) {
-          const existingM = state.members.find(x => x.id === target.motherId);
-          if (existingM) {
-            selectMember(existingM.id);
-            centerOnMember(existingM.id);
-            showToast(`${target.name}ning onasi (${existingM.name}) tanlandi`);
-            return;
-          }
-        }
-
-        if (relType === 'spouse' && target && target.spouseId) {
-          const existingSp = state.members.find(s => s.id === target.spouseId);
-          if (existingSp) {
-            selectMember(existingSp.id);
-            centerOnMember(existingSp.id);
-            showToast(`Turmush o'rtog'i (${existingSp.name}) tanlandi`);
-            return;
-          }
-        }
-
-        if (relType === 'parent' && target && (target.fatherId || target.motherId)) {
-          if (target.fatherId && !target.motherId) {
-            openAddRelativeModal(target.id, 'mother');
-            return;
-          }
-          if (target.motherId && !target.fatherId) {
-            openAddRelativeModal(target.id, 'father');
-            return;
-          }
-          const existingP = state.members.find(p => p.id === (target.fatherId || target.motherId));
-          if (existingP) {
-            openAddRelativeModal(existingP.id, 'parent');
-            return;
-          }
-        }
-
-        document.getElementById('relTargetId').value = targetId || '';
-        document.getElementById('relTypeInput').value = relType;
-
-        document.getElementById('newFirstName').value = '';
-        document.getElementById('newRoleLabel').value = '';
-        document.getElementById('newBirthYear').value = '';
-        document.getElementById('newDeathYear').value = '';
-        document.getElementById('newBirthPlace').value = target ? (target.birthPlace || 'Toshkent') : 'Toshkent';
-        document.getElementById('newOccupation').value = '';
-
-        const primaryHeading = document.getElementById('primaryFormHeading');
-        const secondParentSection = document.getElementById('secondParentSection');
-        const includeSecondParentCheck = document.getElementById('includeSecondParentCheck');
-        const newFirstNameLabel = document.getElementById('newFirstNameLabel');
-        const addModalTitle = document.getElementById('addModalTitle');
-
-        primaryHeading.classList.add('hidden');
-        secondParentSection.classList.add('hidden');
-        newFirstNameLabel.textContent = 'Ism va familiya *';
-        addModalTitle.textContent = 'Yangi oila a\'zosini qo\'shish';
-
-        const banner = document.getElementById('relContextBanner');
-
-        if (relType === 'father' && target) {
-          addModalTitle.textContent = '👨 Otasini qo\'shish';
-          const motherObj = target.motherId ? state.members.find(x => x.id === target.motherId) : null;
-          banner.textContent = motherObj
-            ? `${target.name}ning Otasi qo'shilmoqda (va onasi ${motherObj.name} bilan 💍 juftlikka ulanadi)`
-            : `${target.name} uchun Otasi (yuqori bo'g'in) qo'shilmoqda`;
-          newFirstNameLabel.textContent = 'Otasining ismi va familiyasi *';
-          document.getElementById('newGender').value = 'male';
-          document.getElementById('newRoleLabel').value = 'Otasi';
-        } else if (relType === 'mother' && target) {
-          addModalTitle.textContent = '👩 Onasini qo\'shish';
-          const fatherObj = target.fatherId ? state.members.find(x => x.id === target.fatherId) : null;
-          banner.textContent = fatherObj
-            ? `${target.name}ning Onasi qo'shilmoqda (va otasi ${fatherObj.name} bilan 💍 juftlikka ulanadi)`
-            : `${target.name} uchun Onasi (yuqori bo'g'in) qo'shilmoqda`;
-          newFirstNameLabel.textContent = 'Onasining ismi va familiyasi *';
-          document.getElementById('newGender').value = 'female';
-          document.getElementById('newRoleLabel').value = 'Onasi';
-        } else if (relType === 'spouse' && target) {
-          addModalTitle.textContent = '💍 Turmush o\'rtog\'ini qo\'shish';
-          const oppGender = target.gender === 'female' ? 'male' : 'female';
-          banner.textContent = `${target.name} (${target.gender === 'female' ? 'Ayol' : 'Erkak'}) uchun turmush o'rtog'i qo'shilmoqda`;
-          newFirstNameLabel.textContent = oppGender === 'female' ? 'Rafiqasining ismi va familiyasi *' : 'Turmush o\'rtog\'i (Eri)ning ismi va familiyasi *';
-          document.getElementById('newGender').value = oppGender;
-          document.getElementById('newRoleLabel').value = oppGender === 'female' ? 'Turmush o\'rtog\'i (Rafiqasi)' : 'Turmush o\'rtog\'i (Eri)';
-          document.getElementById('newBirthYear').value = target.birthYear || '';
-        } else if (relType === 'son' && target) {
-          const sp = target.spouseId ? state.members.find(s => s.id === target.spouseId) : null;
-          addModalTitle.textContent = '👦 O\'g\'il farzand qo\'shish';
-          banner.textContent = sp
-            ? `${target.name} va ${sp.name} uchun O'g'il farzand qo'shilmoqda`
-            : `${target.name} uchun O'g'il farzand qo'shilmoqda`;
-          newFirstNameLabel.textContent = 'O\'g\'lining ismi va familiyasi *';
-          document.getElementById('newGender').value = 'male';
-          document.getElementById('newRoleLabel').value = 'O\'g\'li';
-        } else if (relType === 'daughter' && target) {
-          const sp = target.spouseId ? state.members.find(s => s.id === target.spouseId) : null;
-          addModalTitle.textContent = '👧 Qiz farzand qo\'shish';
-          banner.textContent = sp
-            ? `${target.name} va ${sp.name} uchun Qiz farzand qo'shilmoqda`
-            : `${target.name} uchun Qiz farzand qo'shilmoqda`;
-          newFirstNameLabel.textContent = 'Qizining ismi va familiyasi *';
-          document.getElementById('newGender').value = 'female';
-          document.getElementById('newRoleLabel').value = 'Qizi';
-        } else if (relType === 'parent' && target) {
-          addModalTitle.textContent = '👨‍👩‍👦 Ota va Ona (Juftlik) qo\'shish';
-          banner.textContent = `${target.name} uchun Otasi va Onasi (o'zaro turmush qurgan juftlik sifatida) qo'shilmoqda`;
-          primaryHeading.classList.remove('hidden');
-          secondParentSection.classList.remove('hidden');
-          includeSecondParentCheck.checked = true;
-          document.getElementById('secondParentFields').classList.remove('hidden');
-          newFirstNameLabel.textContent = 'Otaning ismi va familiyasi *';
-          document.getElementById('newGender').value = 'male';
-          document.getElementById('newRoleLabel').value = 'Otasi';
-          document.getElementById('secondParentName').value = '';
-          document.getElementById('secondParentBirthYear').value = '';
-          document.getElementById('secondParentOccupation').value = '';
-        } else if (relType === 'child' && target) {
-          const sp = target.spouseId ? state.members.find(s => s.id === target.spouseId) : null;
-          addModalTitle.textContent = '👶 Yangi farzand qo\'shish';
-          banner.textContent = sp
-            ? `${target.name} va ${sp.name} oilasiga yangi farzand qo'shilmoqda`
-            : `${target.name} uchun yangi farzand qo'shilmoqda`;
-          document.getElementById('newGender').value = 'male';
-          document.getElementById('newRoleLabel').value = 'O\'g\'li';
-        } else if (relType === 'sibling' && target) {
-          addModalTitle.textContent = '👫 Aka-uka / Opa-singil qo\'shish';
-          banner.textContent = `${target.name} bilan bir ota-onadan aka-uka / opa-singil qo'shilmoqda`;
-          document.getElementById('newRoleLabel').value = 'Aka-uka / Opa-singil';
-        } else {
-          banner.textContent = `Shajaraga yangi mustaqil shaxs qo'shilmoqda`;
-          document.getElementById('newRoleLabel').value = 'Oila a\'zosi';
-        }
-
-        modal.classList.remove('hidden');
-        setTimeout(() => document.getElementById('newFirstName').focus(), 50);
-      }
-
-      function openConfirmModal(title, desc, onConfirm) {
-        document.getElementById('confirmModalTitle').textContent = title;
-        document.getElementById('confirmModalDesc').textContent = desc;
-        pendingConfirmAction = onConfirm;
-        document.getElementById('confirmModal').classList.remove('hidden');
-      }
-
-      // Export Tree as High-Resolution PNG Image
-      function exportTreeAsPng() {
-        if (state.members.length === 0) {
-          showToast('Shajara bo\'sh!', 'error');
-          return;
-        }
-        const { positions } = computeTreeLayout();
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        positions.forEach(pos => {
-          if (pos.x < minX) minX = pos.x;
-          if (pos.y < minY) minY = pos.y;
-          if (pos.x + pos.w > maxX) maxX = pos.x + pos.w;
-          if (pos.y + pos.h > maxY) maxY = pos.y + pos.h;
-        });
-
-        const pad = 60;
-        const width = Math.ceil((maxX - minX) + pad * 2);
-        const height = Math.ceil((maxY - minY) + pad * 2 + 50);
-
-        const origSvg = document.getElementById('treeSvg');
-        const cloneSvg = origSvg.cloneNode(true);
-        cloneSvg.setAttribute('width', width);
-        cloneSvg.setAttribute('height', height);
-        cloneSvg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-
-        const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        bgRect.setAttribute('width', width);
-        bgRect.setAttribute('height', height);
-        bgRect.setAttribute('fill', '#f8fafc');
-        cloneSvg.insertBefore(bgRect, cloneSvg.firstChild);
-
-        const titleEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        titleEl.setAttribute('x', width / 2);
-        titleEl.setAttribute('y', '38');
-        titleEl.setAttribute('text-anchor', 'middle');
-        titleEl.setAttribute('fill', '#0f172a');
-        titleEl.setAttribute('font-family', 'Inter, sans-serif');
-        titleEl.setAttribute('font-size', '22');
-        titleEl.setAttribute('font-weight', '700');
-        titleEl.textContent = state.title || 'Mening Oila Shajaram';
-        cloneSvg.appendChild(titleEl);
-
-        const cloneGroup = cloneSvg.querySelector('#treeTransformGroup');
-        cloneGroup.setAttribute('transform', `translate(${pad - minX}, ${pad + 35 - minY}) scale(1)`);
-
-        const serializer = new XMLSerializer();
-        const svgStr = serializer.serializeToString(cloneSvg);
-        const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
-        const url = URL.createObjectURL(svgBlob);
-
-        const img = new Image();
-        img.onload = function () {
-          const canvas = document.createElement('canvas');
-          const scale = 2;
-          canvas.width = width * scale;
-          canvas.height = height * scale;
-          const ctx = canvas.getContext('2d');
-          ctx.scale(scale, scale);
-          ctx.drawImage(img, 0, 0);
-          URL.revokeObjectURL(url);
-
-          try {
-            const pngUrl = canvas.toDataURL('image/png');
-            const a = document.createElement('a');
-            a.href = pngUrl;
-            a.download = `${(state.title || 'shajara').toLowerCase().replace(/\s+/g, '_')}.png`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            showToast('Shajara rasmi (PNG) yuklab olindi!');
-          } catch (err) {
-            showToast('Rasmni saqlashda xatolik yuz berdi', 'error');
-          }
+        const newId = generateId();
+        const newMember = {
+          id: newId,
+          name: 'Yangi A\'zo',
+          gender: 'male',
+          role: relType === 'spouse' ? 'Turmush o\'rtog\'i' : 'Farzand',
+          birthYear: '2000',
+          deathYear: '',
+          birthPlace: 'Toshkent',
+          occupation: '',
+          bio: '',
+          photo: '',
+          cardColor: 'auto',
+          fatherId: null,
+          motherId: null,
+          parentId: null,
+          spouseId: null,
+          spouseName: '',
+          generation: 2
         };
-        img.src = url;
-      }
 
-      // Wire up Event Listeners
-      function initEvents() {
-        const viewport = document.getElementById('canvasViewport');
-
-        document.getElementById('includeSecondParentCheck').addEventListener('change', (e) => {
-          document.getElementById('secondParentFields').classList.toggle('hidden', !e.target.checked);
-        });
-
-        // Quick Save Button in Header
-        document.getElementById('quickSaveBtn').addEventListener('click', () => {
-          saveState(true);
-          showToast(`"${state.title}" saqlandi! Istalgan payt "Shajaralarim" bo'limidan ochishingiz mumkin.`);
-        });
-
-        // Projects Modal ("Mening Shajaralarim") Listeners
-        const projectsModal = document.getElementById('projectsModal');
-        function openProjectsModal() {
-          saveState(false);
-          renderProjectsModalList();
-          projectsModal.classList.remove('hidden');
+        const target = state.members.find(m => m.id === targetId);
+        if (target && relType === 'spouse') {
+          target.spouseId = newId;
+          target.spouseName = newMember.name;
+          newMember.spouseId = target.id;
+          newMember.spouseName = target.name;
+        } else if (target && relType === 'child') {
+          newMember.fatherId = target.id;
         }
-        document.getElementById('openProjectsModalBtn').addEventListener('click', openProjectsModal);
-        document.getElementById('createNewTreeTopBtn').addEventListener('click', openProjectsModal);
-        document.getElementById('closeProjectsModalBtn').addEventListener('click', () => {
-          projectsModal.classList.add('hidden');
-        });
 
-        document.getElementById('createStarterCoupleTreeBtn').addEventListener('click', () => {
-          const titleVal = document.getElementById('newProjectTitleInput').value.trim() || `Yangi Oila Shajarasi #${projectsStore.projects.length + 1}`;
-          createAndSwitchProject(getStarterMyFamilyData(titleVal));
-          document.getElementById('newProjectTitleInput').value = '';
-          projectsModal.classList.add('hidden');
-          showToast(`"${state.title}" yaratildi! Avvalgi shajarangiz ham ro'yxatda saqlanib qoldi.`);
-        });
-
-        document.getElementById('createSingleRootTreeBtn').addEventListener('click', () => {
-          const titleVal = document.getElementById('newProjectTitleInput').value.trim() || `Shaxsiy Shajara #${projectsStore.projects.length + 1}`;
-          createAndSwitchProject(getSingleRootFamilyData(titleVal));
-          document.getElementById('newProjectTitleInput').value = '';
-          projectsModal.classList.add('hidden');
-          showToast(`"${state.title}" yaratildi!`);
-        });
-
-        document.getElementById('createSampleCopyTreeBtn').addEventListener('click', () => {
-          const titleVal = document.getElementById('newProjectTitleInput').value.trim() || `Namuna Shajara #${projectsStore.projects.length + 1}`;
-          const sampleCopy = getSampleData();
-          sampleCopy.projectId = 'proj_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 5);
-          sampleCopy.title = titleVal;
-          createAndSwitchProject(sampleCopy);
-          document.getElementById('newProjectTitleInput').value = '';
-          projectsModal.classList.add('hidden');
-          showToast(`"${state.title}" yaratildi!`);
-        });
-
-        document.getElementById('saveCurrentSnapshotBtn').addEventListener('click', () => {
-          const copy = JSON.parse(JSON.stringify(state));
-          copy.projectId = 'proj_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 5);
-          copy.title = (state.title || 'Shajara') + ' (Saqlangan nusxa)';
-          copy.updatedAt = getNowFormatted();
-          projectsStore.projects.unshift(copy);
-          saveState();
-          renderProjectsModalList();
-          showToast(`"${copy.title}" alohida nusxa sifatida saqlandi!`);
-        });
-
-        document.getElementById('exportAllProjectsBtn').addEventListener('click', () => {
-          saveState(false);
-          const blob = new Blob([JSON.stringify(projectsStore, null, 2)], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `barcha_shajaralarim_zaxira.json`;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          URL.revokeObjectURL(url);
-          showToast('Barcha shajaralar bitta zaxira faylga yuklab olindi!');
-        });
-
-        document.getElementById('importProjectFileInput').addEventListener('change', (e) => {
-          const file = e.target.files && e.target.files[0];
-          if (!file) return;
-          const reader = new FileReader();
-          reader.onload = () => {
-            try {
-              const parsed = JSON.parse(reader.result);
-              if (parsed && Array.isArray(parsed.projects)) {
-                parsed.projects.forEach(p => {
-                  const norm = normalizeCouplesData(p);
-                  norm.projectId = 'proj_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 5);
-                  projectsStore.projects.unshift(norm);
-                });
-                switchToProject(projectsStore.projects[0].projectId);
-                renderProjectsModalList();
-                showToast('Barcha shajaralar ro\'yxatga qo\'shildi!');
-              } else if (parsed && Array.isArray(parsed.members)) {
-                parsed.projectId = 'proj_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 5);
-                createAndSwitchProject(parsed);
-                renderProjectsModalList();
-                showToast(`"${state.title}" yangi shajara sifatida qo'shildi!`);
-              } else {
-                showToast('Noto\'g\'ri fayl formati', 'error');
-              }
-            } catch (err) {
-              showToast('Faylni o\'qishda xatolik', 'error');
-            }
-          };
-          reader.readAsText(file);
-        });
-
-        // Floating Quick Bar 5 Buttons
-        document.getElementById('quickBarFatherBtn').addEventListener('click', () => {
-          if (selectedId) openAddRelativeModal(selectedId, 'father');
-        });
-        document.getElementById('quickBarMotherBtn').addEventListener('click', () => {
-          if (selectedId) openAddRelativeModal(selectedId, 'mother');
-        });
-        document.getElementById('quickBarSpouseBtn').addEventListener('click', () => {
-          if (selectedId) openAddRelativeModal(selectedId, 'spouse');
-        });
-        document.getElementById('quickBarSonBtn').addEventListener('click', () => {
-          if (selectedId) openAddRelativeModal(selectedId, 'son');
-        });
-        document.getElementById('quickBarDaughterBtn').addEventListener('click', () => {
-          if (selectedId) openAddRelativeModal(selectedId, 'daughter');
-        });
-
-        // Mouse Pan
-        viewport.addEventListener('mousedown', (e) => {
-          if (e.target.closest('.node-card')) return;
-          isPanning = true;
-          startPanX = e.clientX - panX;
-          startPanY = e.clientY - panY;
-        });
-
-        window.addEventListener('mousemove', (e) => {
-          if (!isPanning) return;
-          panX = e.clientX - startPanX;
-          panY = e.clientY - startPanY;
-          updateTransform();
-        });
-
-        window.addEventListener('mouseup', () => {
-          isPanning = false;
-        });
-
-        // Touch Pan
-        viewport.addEventListener('touchstart', (e) => {
-          if (e.touches.length !== 1 || e.target.closest('.node-card')) return;
-          isPanning = true;
-          startPanX = e.touches[0].clientX - panX;
-          startPanY = e.touches[0].clientY - panY;
-        }, { passive: true });
-
-        window.addEventListener('touchmove', (e) => {
-          if (!isPanning || e.touches.length !== 1) return;
-          panX = e.touches[0].clientX - startPanX;
-          panY = e.touches[0].clientY - startPanY;
-          updateTransform();
-        }, { passive: true });
-
-        window.addEventListener('touchend', () => {
-          isPanning = false;
-        });
-
-        // Wheel Zoom
-        viewport.addEventListener('wheel', (e) => {
-          e.preventDefault();
-          const factor = e.deltaY < 0 ? 1.1 : 0.9;
-          const nextZoom = Math.min(Math.max(zoom * factor, 0.3), 2.2);
-          const rect = viewport.getBoundingClientRect();
-          const mx = e.clientX - rect.left;
-          const my = e.clientY - rect.top;
-          panX = mx - (mx - panX) * (nextZoom / zoom);
-          panY = my - (my - panY) * (nextZoom / zoom);
-          zoom = nextZoom;
-          updateTransform();
-        }, { passive: false });
-
-        // Zoom buttons
-        document.getElementById('zoomInBtn').addEventListener('click', () => {
-          zoom = Math.min(zoom * 1.15, 2.2);
-          updateTransform();
-        });
-        document.getElementById('zoomOutBtn').addEventListener('click', () => {
-          zoom = Math.max(zoom * 0.85, 0.3);
-          updateTransform();
-        });
-        document.getElementById('zoomFitBtn').addEventListener('click', fitTreeToViewport);
-
-        // Title & Subtitle live edit
-        document.getElementById('familyTitleInput').addEventListener('input', (e) => {
-          state.title = e.target.value;
-          saveState();
-        });
-        document.getElementById('familySubtitleInput').addEventListener('input', (e) => {
-          state.subtitle = e.target.value;
-          saveState();
-        });
-
-        // Search
-        const searchInput = document.getElementById('searchInput');
-        const clearSearchBtn = document.getElementById('clearSearchBtn');
-        searchInput.addEventListener('input', (e) => {
-          searchQuery = e.target.value;
-          clearSearchBtn.classList.toggle('hidden', !searchQuery);
-          renderTree();
-          renderListView();
-          if (searchQuery.trim()) {
-            const q = searchQuery.trim().toLowerCase();
-            const found = state.members.find(m => (m.name || '').toLowerCase().includes(q));
-            if (found) {
-              selectedId = found.id;
-              renderSidebar();
-              centerOnMember(found.id);
-            }
-          }
-        });
-
-        clearSearchBtn.addEventListener('click', () => {
-          searchQuery = '';
-          searchInput.value = '';
-          clearSearchBtn.classList.add('hidden');
-          renderAll();
-        });
-
-        // Tabs: Tree vs List
-        const tabTreeBtn = document.getElementById('tabTreeBtn');
-        const tabListBtn = document.getElementById('tabListBtn');
-        tabTreeBtn.addEventListener('click', () => {
-          activeTab = 'tree';
-          tabTreeBtn.className = 'px-2.5 py-1 text-xs font-medium rounded-md bg-white text-slate-900 shadow-sm transition';
-          tabListBtn.className = 'px-2.5 py-1 text-xs font-medium rounded-md text-slate-600 hover:text-slate-900 transition';
-          document.getElementById('treeViewContainer').classList.remove('hidden');
-          document.getElementById('listViewContainer').classList.add('hidden');
-          fitTreeToViewport();
-        });
-
-        tabListBtn.addEventListener('click', () => {
-          activeTab = 'list';
-          tabListBtn.className = 'px-2.5 py-1 text-xs font-medium rounded-md bg-white text-slate-900 shadow-sm transition';
-          tabTreeBtn.className = 'px-2.5 py-1 text-xs font-medium rounded-md text-slate-600 hover:text-slate-900 transition';
-          document.getElementById('treeViewContainer').classList.add('hidden');
-          document.getElementById('listViewContainer').classList.remove('hidden');
-          renderListView();
-        });
-
-        // Layout direction toggle
-        document.getElementById('layoutDirBtn').addEventListener('click', () => {
-          state.layoutDirection = state.layoutDirection === 'horizontal' ? 'vertical' : 'horizontal';
-          saveState();
-          renderTree();
-          fitTreeToViewport();
-        });
-
-        // Theme select
-        document.getElementById('themeSelect').addEventListener('change', (e) => {
-          state.theme = e.target.value;
-          saveState();
-          renderTree();
-        });
-
-        // Export PNG
-        document.getElementById('exportPngBtn').addEventListener('click', exportTreeAsPng);
-
-        // Top-left floating buttons
-        document.getElementById('addRootPersonBtn').addEventListener('click', () => {
-          openAddRelativeModal(selectedId, selectedId ? 'child' : 'root');
-        });
-
-        document.getElementById('quickAddSpouseTopBtn').addEventListener('click', () => {
-          if (!selectedId) {
-            showToast('Avval daraxtdan biror shaxsni tanlang!', 'error');
-            return;
-          }
-          openAddRelativeModal(selectedId, 'spouse');
-        });
-
-        document.getElementById('resetSampleBtn').addEventListener('click', () => {
-          openConfirmModal(
-            'Yangi namuna shajara ochish',
-            'Hozirgi ishingiz "Shajaralarim" ro\'yxatida saqlanib qoladi va yangi alohida namuna shajara ochiladi. Davom etasizmi?',
-            () => {
-              const sampleCopy = getSampleData();
-              sampleCopy.projectId = 'proj_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 5);
-              sampleCopy.title = `Namuna Shajara #${projectsStore.projects.length + 1}`;
-              createAndSwitchProject(sampleCopy);
-              showToast('Avvalgi ishingiz saqlanib qoldi va namuna shajara ochildi!');
-            }
-          );
-        });
-
-        document.getElementById('clearAllModalBtn').addEventListener('click', () => {
-          openConfirmModal(
-            'Yangi toza shajara boshlash',
-            'Hozirgi qilgan barcha ishlaringiz "📂 Shajaralarim" ro\'yxatida saqlanib qoladi va yangi "Otam 💍 Onam → Men" shajarasi ochiladi.',
-            () => {
-              const nextTitle = `Mening Shajaram #${projectsStore.projects.length + 1}`;
-              createAndSwitchProject(getStarterMyFamilyData(nextTitle));
-              selectedId = 'men_1';
-              renderAll();
-              fitTreeToViewport();
-              showToast('Avvalgi ishingiz saqlandi va yangi shajara ochildi!');
-            }
-          );
-        });
-
-        // Add Relative Modal Form Submit
-        document.getElementById('closeAddModalBtn').addEventListener('click', () => {
-          document.getElementById('addRelativeModal').classList.add('hidden');
-        });
-        document.getElementById('cancelAddModalBtn').addEventListener('click', () => {
-          document.getElementById('addRelativeModal').classList.add('hidden');
-        });
-
-        document.getElementById('addRelativeForm').addEventListener('submit', (e) => {
-          e.preventDefault();
-          const targetId = document.getElementById('relTargetId').value;
-          const relType = document.getElementById('relTypeInput').value;
-          const target = state.members.find(m => m.id === targetId);
-
-          const newId = generateId();
-          const newMember = {
-            id: newId,
-            name: document.getElementById('newFirstName').value.trim() || 'Yangi a\'zo',
-            gender: document.getElementById('newGender').value,
-            role: document.getElementById('newRoleLabel').value.trim(),
-            birthYear: document.getElementById('newBirthYear').value.trim(),
-            deathYear: document.getElementById('newDeathYear').value.trim(),
-            birthPlace: document.getElementById('newBirthPlace').value.trim(),
-            occupation: document.getElementById('newOccupation').value.trim(),
-            bio: '',
-            photo: '',
-            cardColor: 'auto',
-            fatherId: null,
-            motherId: null,
-            parentId: null,
-            spouseId: null,
-            spouseName: '',
-            generation: 1
-          };
-
-          if (relType === 'father' && target) {
-            newMember.gender = 'male';
-            if (!newMember.role) newMember.role = 'Otasi';
-            target.fatherId = newId;
-            target.parentId = newId;
-            if (target.motherId) {
-              const existingM = state.members.find(x => x.id === target.motherId);
-              if (existingM && !existingM.spouseId) {
-                existingM.spouseId = newId;
-                existingM.spouseName = newMember.name;
-                newMember.spouseId = existingM.id;
-                newMember.spouseName = existingM.name;
-              }
-            }
-            state.members.push(newMember);
-          } else if (relType === 'mother' && target) {
-            newMember.gender = 'female';
-            if (!newMember.role) newMember.role = 'Onasi';
-            target.motherId = newId;
-            if (!target.parentId) target.parentId = newId;
-            if (target.fatherId) {
-              const existingF = state.members.find(x => x.id === target.fatherId);
-              if (existingF && !existingF.spouseId) {
-                existingF.spouseId = newId;
-                existingF.spouseName = newMember.name;
-                newMember.spouseId = existingF.id;
-                newMember.spouseName = existingF.name;
-              }
-            }
-            state.members.push(newMember);
-          } else if (relType === 'spouse' && target) {
-            target.spouseId = newId;
-            target.spouseName = newMember.name;
-            newMember.spouseId = target.id;
-            newMember.spouseName = target.name;
-            newMember.generation = target.generation || 1;
-            state.members.forEach(ch => {
-              if (ch.parentId === target.id || ch.fatherId === target.id || ch.motherId === target.id) {
-                if (newMember.gender === 'female' && !ch.motherId) ch.motherId = newId;
-                if (newMember.gender === 'male' && !ch.fatherId) ch.fatherId = newId;
-              }
-            });
-            state.members.push(newMember);
-          } else if ((relType === 'son' || relType === 'daughter' || relType === 'child') && target) {
-            if (relType === 'son') {
-              newMember.gender = 'male';
-              if (!newMember.role) newMember.role = 'O\'g\'li';
-            } else if (relType === 'daughter') {
-              newMember.gender = 'female';
-              if (!newMember.role) newMember.role = 'Qizi';
-            }
-            const sp = target.spouseId ? state.members.find(s => s.id === target.spouseId) : null;
-            if (target.gender === 'female') {
-              newMember.motherId = target.id;
-              newMember.fatherId = sp ? sp.id : null;
-              newMember.parentId = sp ? sp.id : target.id;
-            } else {
-              newMember.fatherId = target.id;
-              newMember.motherId = sp ? sp.id : null;
-              newMember.parentId = target.id;
-            }
-            state.members.push(newMember);
-          } else if (relType === 'parent' && target) {
-            const oldFatherId = target.fatherId || null;
-            newMember.fatherId = oldFatherId;
-            newMember.parentId = oldFatherId;
-            target.fatherId = newId;
-            target.parentId = newId;
-            state.members.push(newMember);
-
-            const includeSecond = document.getElementById('includeSecondParentCheck').checked;
-            if (includeSecond) {
-              const motherId = generateId();
-              const motherName = document.getElementById('secondParentName').value.trim() || 'Onasi (Ism-familiyasi)';
-              const motherMember = {
-                id: motherId,
-                name: motherName,
-                gender: newMember.gender === 'male' ? 'female' : 'male',
-                role: newMember.gender === 'male' ? 'Onasi' : 'Otasi',
-                birthYear: document.getElementById('secondParentBirthYear').value.trim(),
-                deathYear: '',
-                birthPlace: newMember.birthPlace,
-                occupation: document.getElementById('secondParentOccupation').value.trim(),
-                bio: '',
-                photo: '',
-                cardColor: 'auto',
-                fatherId: null,
-                motherId: null,
-                parentId: null,
-                spouseId: newId,
-                spouseName: newMember.name,
-                generation: 1
-              };
-              newMember.spouseId = motherId;
-              newMember.spouseName = motherName;
-              target.motherId = motherId;
-              state.members.push(motherMember);
-            }
-          } else if (relType === 'sibling' && target) {
-            if (!target.fatherId && !target.motherId && !target.parentId) {
-              const fatherId = generateId();
-              const motherId = generateId();
-              state.members.push({
-                id: fatherId,
-                name: 'Otasi (Katta bo\'g\'in)',
-                gender: 'male',
-                role: 'Otasi',
-                birthYear: '',
-                deathYear: '',
-                birthPlace: target.birthPlace || '',
-                occupation: '',
-                bio: '',
-                photo: '',
-                cardColor: 'auto',
-                fatherId: null,
-                motherId: null,
-                parentId: null,
-                spouseId: motherId,
-                spouseName: 'Onasi (Katta bo\'g\'in)',
-                generation: 1
-              });
-              state.members.push({
-                id: motherId,
-                name: 'Onasi (Katta bo\'g\'in)',
-                gender: 'female',
-                role: 'Onasi',
-                birthYear: '',
-                deathYear: '',
-                birthPlace: target.birthPlace || '',
-                occupation: '',
-                bio: '',
-                photo: '',
-                cardColor: 'auto',
-                fatherId: null,
-                motherId: null,
-                parentId: null,
-                spouseId: fatherId,
-                spouseName: 'Otasi (Katta bo\'g\'in)',
-                generation: 1
-              });
-              target.fatherId = fatherId;
-              target.motherId = motherId;
-              target.parentId = fatherId;
-            }
-            newMember.fatherId = target.fatherId;
-            newMember.motherId = target.motherId;
-            newMember.parentId = target.parentId || target.fatherId || target.motherId;
-            state.members.push(newMember);
-          } else {
-            state.members.push(newMember);
-          }
-
-          selectedId = newId;
-          saveState();
-          document.getElementById('addRelativeModal').classList.add('hidden');
-          renderAll();
-          centerOnMember(newId);
-          showToast(`"${newMember.name}" qo'shildi va saqlandi!`);
-        });
-
-        // Data Modal (Save / Load JSON)
-        const dataModal = document.getElementById('dataModal');
-        document.getElementById('openDataModalBtn').addEventListener('click', () => {
-          document.getElementById('jsonTextarea').value = JSON.stringify(state, null, 2);
-          dataModal.classList.remove('hidden');
-        });
-        document.getElementById('closeDataModalBtn').addEventListener('click', () => {
-          dataModal.classList.add('hidden');
-        });
-
-        document.getElementById('downloadJsonBtn').addEventListener('click', () => {
-          const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `${(state.title || 'oila_shajarasi').toLowerCase().replace(/\s+/g, '_')}.json`;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          URL.revokeObjectURL(url);
-          showToast('Shajara fayli (.json) yuklab olindi!');
-        });
-
-        document.getElementById('uploadJsonInput').addEventListener('change', (e) => {
-          const file = e.target.files && e.target.files[0];
-          if (!file) return;
-          const reader = new FileReader();
-          reader.onload = () => {
-            try {
-              const parsed = JSON.parse(reader.result);
-              if (parsed && Array.isArray(parsed.members)) {
-                parsed.projectId = 'proj_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 5);
-                createAndSwitchProject(parsed);
-                dataModal.classList.add('hidden');
-                showToast('Shajara yangi loyiha sifatida yuklandi (eski shajaralaringiz ham saqlanib qoldi)!');
-              } else {
-                showToast('Noto\'g\'ri fayl formati', 'error');
-              }
-            } catch (err) {
-              showToast('JSON faylni o\'qishda xatolik', 'error');
-            }
-          };
-          reader.readAsText(file);
-        });
-
-        document.getElementById('copyJsonTextBtn').addEventListener('click', () => {
-          const ta = document.getElementById('jsonTextarea');
-          ta.select();
-          try {
-            document.execCommand('copy');
-            showToast('Nusxa olindi!');
-          } catch (err) {
-            showToast('Nusxa olishda xatolik', 'error');
-          }
-        });
-
-        document.getElementById('applyJsonTextBtn').addEventListener('click', () => {
-          try {
-            const raw = document.getElementById('jsonTextarea').value;
-            const parsed = JSON.parse(raw);
-            if (parsed && Array.isArray(parsed.members)) {
-              parsed.projectId = 'proj_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 5);
-              createAndSwitchProject(parsed);
-              dataModal.classList.add('hidden');
-              showToast('Shajara ma\'lumotlari yangi ro\'yxatga tiklandi!');
-            } else {
-              showToast('JSON tarkibida "members" ro\'yxati topilmadi', 'error');
-            }
-          } catch (err) {
-            showToast('JSON matnida xatolik bor', 'error');
-          }
-        });
-
-        // Confirm Modal buttons
-        document.getElementById('cancelConfirmBtn').addEventListener('click', () => {
-          document.getElementById('confirmModal').classList.add('hidden');
-          pendingConfirmAction = null;
-        });
-        document.getElementById('acceptConfirmBtn').addEventListener('click', () => {
-          document.getElementById('confirmModal').classList.add('hidden');
-          if (typeof pendingConfirmAction === 'function') {
-            pendingConfirmAction();
-          }
-          pendingConfirmAction = null;
-        });
-
-        // Mobile sidebar toggles
-        document.getElementById('openSidebarMobileBtn').addEventListener('click', () => {
-          document.getElementById('inspectorSidebar').classList.remove('translate-x-full');
-        });
-        document.getElementById('closeSidebarMobileBtn').addEventListener('click', () => {
-          document.getElementById('inspectorSidebar').classList.add('translate-x-full');
-        });
-
-        window.addEventListener('resize', () => {
-          if (activeTab === 'tree') {
-            updateTransform();
-          }
-        });
-      }
-
-      // Initialize App
-      window.addEventListener('DOMContentLoaded', () => {
-        initEvents();
+        state.members.push(newMember);
         saveState();
         renderAll();
-        setTimeout(fitTreeToViewport, 60);
+        selectMember(newId);
+        showToast('Yangi shaxs qo\'shildi!');
+      }
+
+      // Event Listeners
+      document.getElementById('quickSaveBtn').addEventListener('click', () => saveState(true));
+
+      document.getElementById('addRootPersonBtn').addEventListener('click', () => {
+        openAddRelativeModal(selectedId, 'child');
+      });
+      document.getElementById('quickAddSpouseTopBtn').addEventListener('click', () => {
+        if (!selectedId) return;
+        openAddRelativeModal(selectedId, 'spouse');
+      });
+
+      document.getElementById('quickBarFatherBtn').addEventListener('click', () => { if (selectedId) openAddRelativeModal(selectedId, 'father'); });
+      document.getElementById('quickBarMotherBtn').addEventListener('click', () => { if (selectedId) openAddRelativeModal(selectedId, 'mother'); });
+      document.getElementById('quickBarSpouseBtn').addEventListener('click', () => { if (selectedId) openAddRelativeModal(selectedId, 'spouse'); });
+      document.getElementById('quickBarSonBtn').addEventListener('click', () => { if (selectedId) openAddRelativeModal(selectedId, 'child'); });
+      document.getElementById('quickBarDaughterBtn').addEventListener('click', () => { if (selectedId) openAddRelativeModal(selectedId, 'child'); });
+
+      const viewport = document.getElementById('canvasViewport');
+      viewport.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.node-card')) return;
+        isPanning = true; startPanX = e.clientX - panX; startPanY = e.clientY - panY;
+      });
+      window.addEventListener('mousemove', (e) => {
+        if (!isPanning) return;
+        panX = e.clientX - startPanX; panY = e.clientY - startPanY;
+        updateTransform();
+      });
+      window.addEventListener('mouseup', () => { isPanning = false; });
+
+      document.getElementById('zoomInBtn').addEventListener('click', () => { zoom *= 1.15; updateTransform(); });
+      document.getElementById('zoomOutBtn').addEventListener('click', () => { zoom *= 0.85; updateTransform(); });
+      document.getElementById('zoomFitBtn').addEventListener('click', fitTreeToViewport);
+
+      document.getElementById('tabTreeBtn').addEventListener('click', () => {
+        activeTab = 'tree';
+        document.getElementById('treeViewContainer').classList.remove('hidden');
+        document.getElementById('listViewContainer').classList.add('hidden');
+      });
+      document.getElementById('tabListBtn').addEventListener('click', () => {
+        activeTab = 'list';
+        document.getElementById('treeViewContainer').classList.add('hidden');
+        document.getElementById('listViewContainer').classList.remove('hidden');
+        renderListView();
+      });
+
+      document.getElementById('layoutDirBtn').addEventListener('click', () => {
+        state.layoutDirection = state.layoutDirection === 'horizontal' ? 'vertical' : 'horizontal';
+        renderTree();
+      });
+
+      document.getElementById('exportPngBtn').addEventListener('click', () => {
+        showToast('PNG eksport tayyorlanmoqda...');
+      });
+
+      window.addEventListener('DOMContentLoaded', () => {
+        fitTreeToViewport();
       });
     })();
   </script>
